@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PV Bifacial Simulator</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <h1>PV Bifacial Simulator</h1>
+    <p class="subtitle">24-hour IST irradiance + bifacial configuration sweep</p>
+
+    <section class="card controls">
+      <h2>Inputs</h2>
+      <div class="grid">
+        <label>
+          Location
+          <input id="locationInput" type="text" placeholder="Greater Noida">
+        </label>
+        <label>
+          Selected Day (IST)
+          <input id="startDateInput" type="date">
+        </label>
+        <label>
+          End Date (auto-synced)
+          <input id="endDateInput" type="date">
+        </label>
+      </div>
+      <p class="hint">The app runs a 24-hour simulation for the selected IST day.</p>
+
+      <h3>Ranges</h3>
+      <div class="grid ranges">
+        <label>
+          Height Min (cm)
+          <input id="heightMin" type="number" value="50">
+        </label>
+        <label>
+          Height Max (cm)
+          <input id="heightMax" type="number" value="450">
+        </label>
+        <label>
+          Height Step (cm)
+          <input id="heightStep" type="number" value="50">
+        </label>
+        <label>
+          Tilt Min (deg)
+          <input id="tiltMin" type="number" value="10">
+        </label>
+        <label>
+          Tilt Max (deg)
+          <input id="tiltMax" type="number" value="50">
+        </label>
+        <label>
+          Tilt Step (deg)
+          <input id="tiltStep" type="number" value="10">
+        </label>
+        <label>
+          Albedo Mode
+          <select id="albedoModeSelect">
+            <option value="single">Single Albedo (Recommended)</option>
+            <option value="sweep">Albedo Sweep</option>
+          </select>
+        </label>
+        <label id="albedoPresetLabel">
+          Surface Preset
+          <select id="albedoPresetSelect">
+            <option value="custom">Custom single value</option>
+            <option value="0.18">Urban environment (0.18)</option>
+            <option value="0.20">Grass (0.20)</option>
+            <option value="0.26">Fresh grass (0.26)</option>
+            <option value="0.82">Fresh snow (0.82)</option>
+            <option value="0.65">Wet snow (0.65)</option>
+            <option value="0.12">Dry asphalt (0.12)</option>
+            <option value="0.18">Wet asphalt (0.18)</option>
+            <option value="0.30">Concrete (0.30)</option>
+            <option value="0.33">Red tiles (0.33)</option>
+            <option value="0.85">Aluminum (0.85)</option>
+            <option value="0.74">Copper (0.74)</option>
+            <option value="0.35">New galvanized steel (0.35)</option>
+            <option value="0.08">Very dirty galvanized (0.08)</option>
+          </select>
+        </label>
+        <label id="albedoSingleLabel">
+          Albedo Value
+          <input id="albedoSingle" type="number" value="0.2" step="0.01" min="0.05" max="0.95">
+        </label>
+        <label id="albedoMinLabel">
+          Albedo Min
+          <input id="albedoMin" type="number" value="0.2" step="0.01">
+        </label>
+        <label id="albedoMaxLabel">
+          Albedo Max
+          <input id="albedoMax" type="number" value="0.6" step="0.01">
+        </label>
+        <label id="albedoStepLabel">
+          Albedo Step
+          <input id="albedoStep" type="number" value="0.1" step="0.01">
+        </label>
+      </div>
+      <p class="hint">Suggested height sweep: 0.5 m to 4.5 m (step 0.5 m).</p>
+      <p class="hint">Reason: this covers practical PV mounting clearances while keeping structural assumptions and sweep size realistic; much higher mounting is uncommon and often cost-inefficient.</p>
+
+      <div class="grid checkbox-grid">
+        <label class="checkbox">
+          <input id="useMatlabInput" type="checkbox">
+          Use MATLAB engine
+        </label>
+        <label class="checkbox">
+          <input id="strictMatlabInput" type="checkbox">
+          Strict MATLAB (no fallback)
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="fetchIrradianceBtn" type="button">Fetch Irradiance</button>
+        <button id="runAnalysisBtn" type="button">Run Analysis</button>
+      </div>
+      <p id="statusText" class="status">Ready</p>
+    </section>
+
+    <section class="card">
+      <h2>Model Equations & Data Sources</h2>
+      <div class="formula-grid">
+        <div class="formula-item">
+          <h3>Effective Irradiance</h3>
+          <p><code>G_front = GHI * max(0.58, cos(0.8 * beta))</code></p>
+          <p><code>VF = (1 - cos(beta)) / 2</code></p>
+          <p><code>G_rear = GHI * sqrt(albedo) * VF * f_height * f_sat * bifaciality</code></p>
+          <p><code>G_eff = G_front + G_rear</code></p>
+        </div>
+        <div class="formula-item">
+          <h3>Power & Energy</h3>
+          <p><code>P_hour(kW) = (G_eff / 1000) * area * frontEff * inverterEff</code></p>
+          <p><code>Energy(kWh) = sum(P_hour)</code></p>
+          <p><code>Peak(kW) = max(P_hour)</code></p>
+          <p><code>Rear Gain(%) = sum(G_rear) / sum(GHI) * 100</code></p>
+          <p><code>Front Share(%) = sum(G_front) / sum(G_eff) * 100</code></p>
+        </div>
+        <div class="formula-item">
+          <h3>Data Sources</h3>
+          <p><code>Location:</code> OpenStreetMap Nominatim geocoding</p>
+          <p><code>Irradiance:</code> NASA POWER hourly <code>ALLSKY_SFC_SW_DWN</code> (normalized to Wh/m^2; equivalent W/m^2 shown for averages)</p>
+          <p><code>Panel model:</code> App defaults unless user overrides panel parameters</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="irradianceSection" class="card is-hidden">
+      <h2>Irradiance</h2>
+      <div id="irradianceContent" class="result-content is-hidden">
+        <div id="irradianceSummary" class="summary"></div>
+        <canvas id="irradianceChart"></canvas>
+        <p id="csvLinkRow" class="csv-row"></p>
+      </div>
+    </section>
+
+    <section id="analysisSection" class="card is-hidden">
+      <h2>Analysis Result</h2>
+      <div id="analysisContent" class="result-content is-hidden">
+        <div id="analysisSummary" class="summary"></div>
+        <div class="inline-controls">
+          <label>
+            Ranking Objective
+            <select id="objectiveSelect">
+              <option value="energy">Max Energy (kWh)</option>
+              <option value="rearGain">Max Rear Gain (%)</option>
+              <option value="balanced">Balanced</option>
+              <option value="peakPower">Max Peak Power (kW)</option>
+            </select>
+          </label>
+        </div>
+        <canvas id="rankingChart"></canvas>
+        <h3>I-V Curves (Top Configurations)</h3>
+        <canvas id="ivChart"></canvas>
+        <h3>P-V Curves (Top Configurations)</h3>
+        <canvas id="pvChart"></canvas>
+        <div class="table-wrap">
+          <table id="topTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Height (cm)</th>
+                <th>Tilt (deg)</th>
+                <th>Albedo</th>
+                <th>Energy (kWh)</th>
+                <th>Peak (kW)</th>
+                <th>Rear Gain (%)</th>
+                <th>Front Share (%)</th>
+                <th id="objectiveMetricHeader">Objective Value</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
