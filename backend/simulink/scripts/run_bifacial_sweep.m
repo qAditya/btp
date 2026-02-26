@@ -31,15 +31,36 @@ function run_bifacial_sweep(configPath, outputPath)
         error('irradiance.ghi and irradiance.time must have equal length.');
     end
 
+    % Temperature array (optional)
+    if isfield(cfg.irradiance, 'temperature') && numel(cfg.irradiance.temperature) == numel(ghi)
+        temperature = cfg.irradiance.temperature(:)';
+    else
+        temperature = nan(size(ghi));
+    end
+
+    % Location (needed for solar position)
+    lat = 28.47; lon = 77.50;   % defaults
+    if isfield(cfg, 'location')
+        if isfield(cfg.location, 'latitude'),  lat = cfg.location.latitude;  end
+        if isfield(cfg.location, 'longitude'), lon = cfg.location.longitude; end
+    end
+
     panel = cfg.panelConfig;
     areaM2 = panel.areaM2;
     frontEfficiency = panel.frontEfficiency;
     inverterEfficiency = panel.inverterEfficiency;
     bifaciality = panel.bifaciality;
+    tempCoeffPerC = -0.004;
+    if isfield(panel, 'tempCoeffPerC'), tempCoeffPerC = panel.tempCoeffPerC; end
 
     heightValues = cfg.ranges.heightCm(:)';
     tiltValues = cfg.ranges.tiltDeg(:)';
     albedoValues = cfg.ranges.albedo(:)';
+    if isfield(cfg.ranges, 'azimuthDeg')
+        azimuthValues = cfg.ranges.azimuthDeg(:)';
+    else
+        azimuthValues = 180;  % default equator-facing
+    end
 
     results = struct([]);
     idx = 0;
@@ -47,11 +68,14 @@ function run_bifacial_sweep(configPath, outputPath)
     for h = heightValues
         for t = tiltValues
             for a = albedoValues
-                idx = idx + 1;
-                [metrics, hourlySeries] = evaluate_config(ghi, time, h, t, a, areaM2, frontEfficiency, inverterEfficiency, bifaciality);
-                results(idx).configuration = struct('heightCm', h, 'tiltDeg', t, 'albedo', a); %#ok<AGROW>
-                results(idx).metrics = metrics; %#ok<AGROW>
-                results(idx).hourlySeries = hourlySeries; %#ok<AGROW>
+                for az = azimuthValues
+                    idx = idx + 1;
+                    [metrics, hourlySeries] = evaluate_config(ghi, time, temperature, h, t, a, az, ...
+                        areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, tempCoeffPerC);
+                    results(idx).configuration = struct('heightCm', h, 'tiltDeg', t, 'albedo', a, 'azimuthDeg', az); %#ok<AGROW>
+                    results(idx).metrics = metrics; %#ok<AGROW>
+                    results(idx).hourlySeries = hourlySeries; %#ok<AGROW>
+                end
             end
         end
     end
@@ -88,7 +112,8 @@ function run_bifacial_sweep(configPath, outputPath)
     write_text_file(outputPath, jsonText);
 end
 
-function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg, albedo, areaM2, frontEfficiency, inverterEfficiency, bifaciality)
+function [metrics, hourlySeries] = evaluate_config(ghi, time, temperature, heightCm, tiltDeg, albedo, azimuthDeg, ...
+        areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, tempCoeffPerC)
     totalEnergyKWh = 0;
     peakPowerKW = 0;
     totalFront = 0;
@@ -106,8 +131,33 @@ function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg,
 
     for i = 1:numel(ghi)
         ghiVal = max(0, double(ghi(i)));
-        [effVal, frontVal, rearVal] = calculate_irradiance(ghiVal, tiltDeg, heightCm, albedo, bifaciality);
-        powerKW = (effVal / 1000) * areaM2 * frontEfficiency * inverterEfficiency;
+
+        % Parse UTC hour and day-of-year from time string
+        tStr = read_time_value(time, i);
+        hourUTC = 12;  doy = 172;  % fallback defaults
+        try
+            dt = datetime(tStr, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'UTC');
+            hourUTC = hour(dt) + minute(dt)/60;
+            doy = day(dt, 'dayofyear');
+        catch
+            try
+                dt = datetime(tStr, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss', 'TimeZone', 'UTC');
+                hourUTC = hour(dt) + minute(dt)/60;
+                doy = day(dt, 'dayofyear');
+            catch
+                % use defaults
+            end
+        end
+
+        ambientT = NaN;
+        if numel(temperature) >= i
+            ambientT = double(temperature(i));
+        end
+
+        [effVal, frontVal, rearVal, tDerate] = calculate_irradiance( ...
+            ghiVal, tiltDeg, heightCm, albedo, bifaciality, lat, lon, hourUTC, doy, ambientT, tempCoeffPerC, azimuthDeg);
+
+        powerKW = (effVal / 1000) * areaM2 * frontEfficiency * inverterEfficiency * tDerate;
 
         totalEnergyKWh = totalEnergyKWh + powerKW;
         peakPowerKW = max(peakPowerKW, powerKW);
@@ -149,10 +199,11 @@ function out = map_summary(entry, rankValue, includeHourly)
     cfg = entry.configuration;
     out = struct();
     out.rank = rankValue;
-    out.configurationId = sprintf('H%s_T%s_A%s', num2str(cfg.heightCm), num2str(cfg.tiltDeg), num2str(cfg.albedo));
+    out.configurationId = sprintf('H%s_T%s_A%s_Az%s', num2str(cfg.heightCm), num2str(cfg.tiltDeg), num2str(cfg.albedo), num2str(cfg.azimuthDeg));
     out.heightCm = cfg.heightCm;
     out.tiltDeg = cfg.tiltDeg;
     out.albedo = cfg.albedo;
+    out.azimuthDeg = cfg.azimuthDeg;
     out.totalEnergyKWh = entry.metrics.totalEnergyKWh;
     out.peakPowerKW = entry.metrics.peakPowerKW;
     out.rearGainPercent = entry.metrics.rearGainPercent;

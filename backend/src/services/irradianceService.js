@@ -1,5 +1,7 @@
 const POWER_BASE_URL = "https://power.larc.nasa.gov/api/temporal/hourly/point";
-const POWER_PARAMETER = "ALLSKY_SFC_SW_DWN";
+const POWER_PARAM_GHI = "ALLSKY_SFC_SW_DWN";
+const POWER_PARAM_TEMP = "T2M";
+const POWER_PARAMETERS = `${POWER_PARAM_GHI},${POWER_PARAM_TEMP}`;
 const SUPPORTED_TIMEZONES = {
   UTC: { offsetMinutes: 0, label: "UTC" },
   IST: { offsetMinutes: 330, label: "IST (UTC+05:30)" }
@@ -130,7 +132,7 @@ function normalizeDateRange(options = {}) {
 
 function buildPowerUrl({ latitude, longitude, startDateCompact, endDateCompact, format }) {
   const params = new URLSearchParams({
-    parameters: POWER_PARAMETER,
+    parameters: POWER_PARAMETERS,
     community: "RE",
     latitude: String(latitude),
     longitude: String(longitude),
@@ -247,21 +249,23 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
   }
 
   const payload = await response.json();
-  const parameterSeries = payload?.properties?.parameter?.[POWER_PARAMETER];
+  const ghiSeries = payload?.properties?.parameter?.[POWER_PARAM_GHI];
+  const t2mSeries = payload?.properties?.parameter?.[POWER_PARAM_TEMP] || {};
 
-  if (!parameterSeries || typeof parameterSeries !== "object") {
+  if (!ghiSeries || typeof ghiSeries !== "object") {
     throw createIrradianceError("Irradiance data is incomplete for this location.", 502);
   }
 
   const fillValue = Number(payload?.properties?.fill_value ?? -999);
   const rawUnit =
-    payload?.parameters?.[POWER_PARAMETER]?.units ||
-    payload?.header?.[POWER_PARAMETER]?.units ||
+    payload?.parameters?.[POWER_PARAM_GHI]?.units ||
+    payload?.header?.[POWER_PARAM_GHI]?.units ||
     "kWh/m^2";
 
-  const sortedEntries = Object.entries(parameterSeries).sort(([a], [b]) => a.localeCompare(b));
+  const sortedEntries = Object.entries(ghiSeries).sort(([a], [b]) => a.localeCompare(b));
   const time = [];
   const ghiWhM2Hourly = [];
+  const temperatureC = [];
 
   for (const [hourKey, rawValue] of sortedEntries) {
     const numericRaw = Number(rawValue);
@@ -286,6 +290,9 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
 
     time.push(zonedTime.timeIso);
     ghiWhM2Hourly.push(converted);
+
+    const tempRaw = Number(t2mSeries[hourKey]);
+    temperatureC.push(Number.isFinite(tempRaw) && tempRaw !== fillValue ? tempRaw : null);
   }
 
   if (time.length === 0) {
@@ -300,13 +307,15 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
       time,
       // Legacy key kept for compatibility with current simulation payload readers.
       ghi_w_m2: ghiWhM2Hourly,
-      ghi_wh_m2: ghiWhM2Hourly
+      ghi_wh_m2: ghiWhM2Hourly,
+      temperature: temperatureC
     },
     units: {
       ghiWhM2Hourly: "Wh/m^2",
       totalGhiWhM2: "Wh/m^2",
       averageEquivalentGhiWm2: "W/m^2",
       peakHourlyGhiWhM2: "Wh/m^2",
+      temperature: "°C",
       // Legacy unit key kept for compatibility.
       ghiWm2: "Wh/m^2"
     },
@@ -318,7 +327,8 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
     },
     source: {
       provider: "NASA POWER",
-      parameter: POWER_PARAMETER,
+      parameters: POWER_PARAMETERS,
+      parameter: POWER_PARAM_GHI,
       rawUnit,
       normalizedHourlyUnit: "Wh/m^2",
       queriedTimeStandard: "UTC",
