@@ -3,7 +3,7 @@
 Express backend for:
 - Free geolocation lookup by place name
 - Free irradiance-only time series by geo-coordinates
-- Bifacial PV sweep (height, tilt, albedo)
+- Bifacial PV sweep (height, tilt, albedo; azimuth fixed equator‑facing)
 - Optional MATLAB execution path
 
 ## Folder Layout
@@ -101,7 +101,15 @@ Backward-compatible alias to `/api/simulation/analyze`.
 - `MATLAB_TIMEOUT_MS` default `300000`
 
 ## Effective Irradiance Formula
-- `ViewFactor = (1 - cos(tilt)) / 2`
-- `HeightFactor = 1 + (heightCm / 1000)`
-- `RearEffective = GHI * albedo * ViewFactor * HeightFactor * bifaciality`
-- `G_effective = GHI + RearEffective`
+Equations mirror those presented in the BTP‑1 paper; no temperature
+correction is applied so the output can be quoted directly.
+
+- **Front irradiance**: Liu‑Jordan isotropic transposition of beam + diffuse
+  + ground reflection (equator‑facing POA).  [BTP‑1 eqns 2‑4]
+- **Rear irradiance**: ground‑reflected + diffuse component
+  `rear_ground = GHI × albedo × rearViewFactor × heightFactor`
+  `rear_diffuse = GHI_diffuse × 0.1`
+  `rear = (rear_ground + rear_diffuse) × bifaciality`  [BTP‑1 eqns 7‑8 + diffuse]
+- **Total effective** = front + rear (no derating).
+
+Azimuth remains fixed at equator‑facing; variations are omitted by design.

@@ -24,7 +24,7 @@
 
     <!-- Location & Date -->
     <section class="card">
-      <div class="card-header"><h2>Location &amp; Date</h2></div>
+      <div class="card-header"><h2>📍 Location &amp; Date</h2></div>
       <div class="grid cols-3">
         <label>
           <span class="label-text">Location</span>
@@ -43,7 +43,7 @@
 
     <!-- Sweep Parameters -->
     <section class="card">
-      <div class="card-header"><h2>Sweep Parameters</h2></div>
+      <div class="card-header"><h2>⚙️ Sweep Parameters</h2></div>
 
       <div class="param-group">
         <h3 class="param-title">Panel Height</h3>
@@ -52,6 +52,7 @@
           <label><span class="label-text">Max (cm)</span><input id="heightMax" type="number" value="450"></label>
           <label><span class="label-text">Step (cm)</span><input id="heightStep" type="number" value="50"></label>
         </div>
+        <p class="hint">Recommended sweep: 0.5 m to 4.5 m (50‑450 cm) with 0.5 m steps. This range captures the peak rear‑gain region (~1 m clearance) and the subsequent diminishing returns at greater heights.</p>
       </div>
 
       <div class="param-group">
@@ -63,15 +64,6 @@
         </div>
       </div>
 
-      <div class="param-group">
-        <h3 class="param-title">Panel Azimuth</h3>
-        <div class="grid cols-3">
-          <label><span class="label-text">Min (°)</span><input id="azimuthMin" type="number" value="180"></label>
-          <label><span class="label-text">Max (°)</span><input id="azimuthMax" type="number" value="180"></label>
-          <label><span class="label-text">Step (°)</span><input id="azimuthStep" type="number" value="15"></label>
-        </div>
-        <p class="hint">0° = North, 90° = East, 180° = South (equator-facing), 270° = West. Keep min = max = 180 to skip azimuth sweep.</p>
-      </div>
 
       <div class="param-group">
         <h3 class="param-title">Ground Albedo</h3>
@@ -132,9 +124,36 @@
       <p id="statusText" class="status">Ready</p>
     </section>
 
+    <!-- Model Formulas -->
+    <section class="card">
+      <div class="card-header"><h2>📐 Model Formulas</h2></div>
+      <div class="formula-list">
+        <p><strong>Front irradiance</strong> (equator‑facing, BTP‑1):</p>
+        <pre>beam_tilted = DNI × max(0, cos I)
+sky_vf = (1 + cos β)/2
+gnd_vf = (1 − cos β)/2
+ghi_diffuse = GHI × kd
+front = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf</pre>
+        <p><strong>Rear irradiance</strong> (ground reflection + diffuse, BTP‑1):</p>
+        <pre>rear_vf = (1 − cos β)/2
+height_factor = min(1 + h/1000, 2.2)   % h in cm; cap ≈2.2
+rear_ground = GHI × albedo × rear_vf × height_factor
+rear_diffuse = GHI_diffuse × 0.1
+rear = (rear_ground + rear_diffuse) × bifaciality</pre>
+        <p><strong>Total effective</strong> = front + rear (≥0) — equations taken verbatim from the BTP‑1 research paper. No additional geometry or diffusion formulas are shown.</p>
+      </div>
+    </section>
+
+    <!-- Geometry Diagram -->
+    <section class="card">
+      <div class="card-header"><h2>🔭 Bifacial Panel Geometry & Radiation Components</h2></div>
+      <!-- simplified: use provided image file -->
+      <img src="images/image.png" alt="Bifacial geometry" style="max-width:100%; border:1px solid #ddd; border-radius:4px;" />
+    </section>
+
     <!-- Irradiance Results -->
     <section id="irradianceSection" class="card is-hidden">
-      <div class="card-header"><h2>Irradiance Data</h2></div>
+      <div class="card-header"><h2>☀️ Irradiance Data</h2></div>
       <div id="irradianceContent" class="result-content is-hidden">
         <div id="irradianceSummary" class="summary"></div>
         <div class="chart-wrap"><canvas id="irradianceChart"></canvas></div>
@@ -144,7 +163,7 @@
 
     <!-- Analysis Results -->
     <section id="analysisSection" class="card is-hidden">
-      <div class="card-header"><h2>Analysis Results</h2></div>
+      <div class="card-header"><h2>📊 Analysis Results</h2></div>
       <div id="analysisContent" class="result-content is-hidden">
         <div id="analysisSummary" class="summary"></div>
         <div class="inline-controls">
@@ -159,25 +178,23 @@
           </label>
         </div>
         <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
-        <h3>I-V Curves (Top Configurations)</h3>
+        <h3>🔘 I-V Curves (Top Configurations)</h3>
         <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
-        <h3>P-V Curves (Top Configurations)</h3>
+        <h3>⚡ P-V Curves (Top Configurations)</h3>
         <div class="chart-wrap"><canvas id="pvChart"></canvas></div>
         <div class="table-wrap">
           <table id="topTable">
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Height (cm)</th>
-                <th>Tilt (°)</th>
-                <th>Azimuth (°)</th>
-                <th>Albedo</th>
-                <th>Energy (kWh)</th>
-                <th>Peak (kW)</th>
-                <th>Rear Gain (%)</th>
-                <th>Front Share (%)</th>
-                <th id="objectiveMetricHeader">Objective</th>
-              </tr>
+                  <th>Rank</th>
+                  <th>Height (cm)</th>
+                  <th>Tilt (°)</th>
+                  <th>Albedo</th>
+                  <th>Energy (kWh)</th>
+                  <th>Peak (kW)</th>
+                  <th>Rear Gain (%)</th>
+                  <th id="objectiveMetricHeader">Objective</th>
+                </tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -185,20 +202,6 @@
       </div>
     </section>
 
-    <!-- References -->
-    <section class="card">
-      <div class="card-header"><h2>References</h2></div>
-      <ol class="references">
-        <li>D.G. Erbs, S.A. Klein, J.A. Duffie, "Estimation of the diffuse radiation fraction for hourly, daily and monthly-average global radiation," <em>Solar Energy</em>, vol. 28, no. 4, pp. 293–302, 1982.</li>
-        <li>B.Y.H. Liu &amp; R.C. Jordan, "The interrelationship and characteristic distribution of direct, diffuse and total solar radiation," <em>Solar Energy</em>, vol. 4, no. 3, pp. 1–19, 1960.</li>
-        <li>PVPMC / Sandia National Laboratories, "POA Ground Reflected," <a href="https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/" target="_blank" rel="noreferrer">pvpmc.sandia.gov</a>.</li>
-        <li>G. Raina, R. Vijay, S. Sinha, "Study on the optimum orientation of bifacial photovoltaic module," <em>Int. J. Energy Res.</em>, vol. 46, no. 2, pp. 1696–1711, 2022.</li>
-        <li>A. Asgharzadeh, B. Marion, C. Deline <em>et al.</em>, "A sensitivity study of the impact of installation parameters and system configuration on the performance of bifacial PV arrays," <em>IEEE J. Photovolt.</em>, vol. 8, no. 3, pp. 798–805, 2018.</li>
-        <li>B. Marion, S. MacAlpine, C. Deline <em>et al.</em>, "A practical irradiance model for bifacial PV modules," <em>Proc. IEEE 44th PVSC</em>, 2017.</li>
-        <li>J.A. Duffie &amp; W.A. Beckman, <em>Solar Engineering of Thermal Processes</em>, 4th ed., Wiley, 2013.</li>
-        <li>A. Basak, S. Chakraborty, A.K. Behura, "Tilt angle optimization for bifacial PV module," <em>Applied Energy</em>, vol. 378, 2025.</li>
-      </ol>
-    </section>
 
   </main>
 

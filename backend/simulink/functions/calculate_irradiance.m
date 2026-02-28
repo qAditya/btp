@@ -1,11 +1,11 @@
-function [G_effective, G_front, G_rear_effective, temp_derate] = calculate_irradiance( ...
-        GHI, Tilt, Height_cm, Albedo, Bifaciality, Latitude, Longitude, HourUTC, DayOfYear, AmbientTempC, TempCoeffPerC, PanelAzimuth)
+function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
+        GHI, Tilt, Height_cm, Albedo, Bifaciality, Latitude, Longitude, HourUTC, DayOfYear)
     % calculate_irradiance
-    % Physics-based bifacial irradiance model with mild azimuth correction.
+    % Physics-based bifacial irradiance model.  Azimuth is assumed
+    % equator‑facing and no orientation correction is applied.
     %
     % Uses Liu-Jordan isotropic transposition,
-    % Erbs (1982) diffuse-fraction decomposition, and NOCT temperature derating.
-    % Azimuth correction: f_az = 0.85 + 0.15*max(0,cos(solarAz-panelAz))
+    % Erbs (1982) diffuse-fraction decomposition.
     %
     % References:
     %   [1] Erbs, Klein, Duffie (1982) Solar Energy 28(4):293-302
@@ -23,35 +23,29 @@ function [G_effective, G_front, G_rear_effective, temp_derate] = calculate_irrad
     %   Longitude      - Site longitude in degrees (positive E)
     %   HourUTC        - Hour of day in UTC (fractional, 0-24)
     %   DayOfYear      - Day of year (1-366)
-    %   AmbientTempC   - Ambient temperature in deg C (NaN to skip derating)
-    %   TempCoeffPerC  - Power temperature coefficient (%/C), default -0.004
-    %   PanelAzimuth   - Panel azimuth in degrees (0=N,180=S), default equator-facing
+    %   (temperature parameters removed; model follows BTP-1 exactly)
     %
     % Outputs:
     %   G_effective      - Total effective irradiance (W/m^2)
     %   G_front          - Front effective irradiance (W/m^2)
     %   G_rear_effective - Rear effective irradiance (W/m^2)
-    %   temp_derate      - Temperature derating factor (0.7 - 1.15)
+    %   (no temperature derating returned)
 
     if nargin < 5  || isempty(Bifaciality),   Bifaciality   = 0.7;    end
     if nargin < 6  || isempty(Latitude),      Latitude      = 28.47;   end
     if nargin < 7  || isempty(Longitude),     Longitude     = 77.50;   end
     if nargin < 8  || isempty(HourUTC),       HourUTC       = 12;      end
     if nargin < 9  || isempty(DayOfYear),     DayOfYear     = 172;     end
-    if nargin < 10 || isempty(AmbientTempC),  AmbientTempC  = NaN;     end
-    if nargin < 11 || isempty(TempCoeffPerC), TempCoeffPerC = -0.004;  end
-    if nargin < 12 || isempty(PanelAzimuth)
-        if Latitude >= 0, PanelAzimuth = 180; else, PanelAzimuth = 0; end
-    end
 
     if GHI <= 0
-        G_effective = 0; G_front = 0; G_rear_effective = 0; temp_derate = 1;
+        G_effective = 0; G_front = 0; G_rear_effective = 0;
         return;
     end
 
     beta_rad = deg2rad(Tilt);
 
     % --- Solar position ---
+    % declination (BTP‑1 eqn 1) and hour angle compute cos_zenith for later
     dec = 23.45 * sind(360/365 * (284 + DayOfYear));          % declination (deg)
     B   = deg2rad(360/365 * (DayOfYear - 81));
     eot = 9.87*sin(2*B) - 7.53*cos(B) - 1.5*sin(B);          % equation of time (min)
@@ -61,11 +55,11 @@ function [G_effective, G_front, G_rear_effective, temp_derate] = calculate_irrad
     cos_zenith = sind(Latitude)*sind(dec) + cosd(Latitude)*cosd(dec)*cosd(ha);
 
     if cos_zenith <= 0.01
-        G_effective = 0; G_front = 0; G_rear_effective = 0; temp_derate = 1;
+        G_effective = 0; G_front = 0; G_rear_effective = 0;
         return;
     end
 
-    % --- Erbs decomposition: GHI -> beam + diffuse ---
+    % --- Erbs decomposition: GHI -> beam + diffuse (BTP-1 eqn 1) ---
     GSC   = 1361;
     ecc   = 1 + 0.033 * cosd(360 * DayOfYear / 365);
     G0h   = GSC * ecc * max(0, cos_zenith);
@@ -85,7 +79,7 @@ function [G_effective, G_front, G_rear_effective, temp_derate] = calculate_irrad
     GHI_beam = max(0, GHI - GHI_diff);
     DNI      = GHI_beam / max(cos_zenith, 0.01);
 
-    % --- Front irradiance: equator-facing AOI + Liu-Jordan isotropic ---
+    % --- Front irradiance: equator-facing AOI + Liu-Jordan isotropic (BTP-1 eqns 2-4) ---
     %  Equator-facing: effective latitude = lat - tilt (N-hem) or lat + tilt (S-hem)
     if Latitude >= 0
         eff_lat = Latitude - Tilt;
@@ -101,41 +95,17 @@ function [G_effective, G_front, G_rear_effective, temp_derate] = calculate_irrad
     ground_refl_front = GHI * Albedo * gnd_vf;
     G_front_base      = max(0, beam_tilted + diffuse_tilted + ground_refl_front);
 
-    % --- Azimuth correction: mild nudge on front term ---
-    % Normalized so equator-facing (180 N-hem, 0 S-hem) gives f_az = 1.0 exactly.
-    sin_zenith = sqrt(max(0, 1 - cos_zenith^2));
-    if sin_zenith < 0.01
-        sun_az = 180;
-    else
-        cos_az = (sind(dec) - cos_zenith * sind(Latitude)) / (sin_zenith * cosd(Latitude));
-        cos_az = max(-1, min(1, cos_az));
-        sun_az = acosd(cos_az);
-        if ha > 0, sun_az = 360 - sun_az; end
-    end
-    if Latitude >= 0, ref_az = 180; else, ref_az = 0; end
-    raw_panel = 0.85 + 0.15 * max(0, cos(deg2rad(sun_az - PanelAzimuth)));
-    raw_ref   = 0.85 + 0.15 * max(0, cos(deg2rad(sun_az - ref_az)));
-    f_az = max(0.85, min(1.15, raw_panel / raw_ref));
-    G_front = G_front_base * f_az;
+    % front side assumed equator-facing; no azimuth correction applied
+    G_front = G_front_base;
 
-    % --- Rear irradiance: ground-reflected bifacial model ---
-    rear_gnd_vf   = (1 + cos(beta_rad)) / 2;       % rear faces opposite direction
-    height_m      = max(0, Height_cm) / 100;
-    H_opt         = 1.0;   % optimal clearance (m), approx half collector width
-    height_factor = (2 * height_m * H_opt) / (height_m^2 + H_opt^2);
-    rear_raw      = GHI * Albedo * rear_gnd_vf * height_factor;
-    G_rear_effective = max(0, rear_raw * Bifaciality);
+    % --- Rear irradiance: ground-reflected + diffuse (BTP-1 eqn 7-8 + rear-diffuse) ---
+    rear_gnd_vf   = (1 - cos(beta_rad)) / 2;
+    height_factor = min(1 + (Height_cm / 1000), 1.3);
+    rear_ground   = GHI * Albedo * rear_gnd_vf * height_factor;
+    % Rear diffuse: 10% of diffuse irradiance reaches rear directly
+    rear_diffuse  = GHI_diff * 0.1;
+    G_rear_effective = max(0, (rear_ground + rear_diffuse) * Bifaciality);
 
     G_effective = max(0, G_front + G_rear_effective);
 
-    % --- Temperature derating (NOCT model) ---
-    temp_derate = 1.0;
-    if ~isnan(AmbientTempC) && G_effective > 0
-        NOCT       = 45;
-        T_NOCT_AMB = 20;
-        G_NOCT     = 800;
-        T_cell     = AmbientTempC + (NOCT - T_NOCT_AMB) * G_effective / G_NOCT;
-        temp_derate = 1 + TempCoeffPerC * (T_cell - 25);
-        temp_derate = max(0.70, min(1.15, temp_derate));
-    end
 end

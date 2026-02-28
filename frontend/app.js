@@ -23,9 +23,6 @@ const heightStepInput = document.getElementById("heightStep");
 const tiltMinInput = document.getElementById("tiltMin");
 const tiltMaxInput = document.getElementById("tiltMax");
 const tiltStepInput = document.getElementById("tiltStep");
-const azimuthMinInput = document.getElementById("azimuthMin");
-const azimuthMaxInput = document.getElementById("azimuthMax");
-const azimuthStepInput = document.getElementById("azimuthStep");
 const albedoMinInput = document.getElementById("albedoMin");
 const albedoMaxInput = document.getElementById("albedoMax");
 const albedoStepInput = document.getElementById("albedoStep");
@@ -125,10 +122,9 @@ function getMinMax(rows, key) {
 function normalizeRow(row) {
   return {
     ...row,
-    configurationId: row?.configurationId || `H${toNumber(row?.heightCm)}_T${toNumber(row?.tiltDeg)}_A${toNumber(row?.albedo)}_Az${toNumber(row?.azimuthDeg)}`,
+    configurationId: row?.configurationId || `H${toNumber(row?.heightCm)}_T${toNumber(row?.tiltDeg)}_A${toNumber(row?.albedo)}`,
     heightCm: toNumber(row?.heightCm, 0),
     tiltDeg: toNumber(row?.tiltDeg, 0),
-    azimuthDeg: toNumber(row?.azimuthDeg, 180),
     albedo: toNumber(row?.albedo, 0),
     totalEnergyKWh: toNumber(row?.totalEnergyKWh, 0),
     peakPowerKW: toNumber(row?.peakPowerKW, 0),
@@ -171,9 +167,7 @@ function renderIrradianceSummary(data) {
     summaryItem("Hours", s.hours ?? "-"),
     summaryItem("Total GHI (Wh/m²)", s.totalGhiWhM2 ?? "-"),
     summaryItem("Avg Irradiance (W/m²)", s.averageEquivalentGhiWm2 ?? s.averageGhiWm2 ?? "-"),
-    summaryItem("Peak GHI (Wh/m²)", s.peakGhiWhM2 ?? s.peakGhiWm2 ?? "-"),
-    summaryItem("Avg Temp (°C)", s.avgTemperatureC ?? "-"),
-    summaryItem("Temp Range (°C)", s.minTemperatureC != null && s.maxTemperatureC != null ? `${s.minTemperatureC} / ${s.maxTemperatureC}` : "-")
+    summaryItem("Peak GHI (Wh/m²)", s.peakGhiWhM2 ?? s.peakGhiWm2 ?? "-")
   ].join("");
   csvLinkRow.innerHTML = src?.csvUrl ? `NASA CSV: <a href="${src.csvUrl}" target="_blank" rel="noreferrer">Download</a>` : "";
 }
@@ -187,7 +181,6 @@ function renderAnalysisSummary(data, mode, winner) {
     summaryItem("Combinations", data.combinationsTested ?? "-"),
     summaryItem("Optimal Height", `${w.heightCm ?? "-"} cm`),
     summaryItem("Optimal Tilt", `${w.tiltDeg ?? "-"}°`),
-    summaryItem("Optimal Azimuth", `${w.azimuthDeg ?? "-"}°`),
     summaryItem("Albedo", w.albedo ?? "-"),
     summaryItem("Energy (kWh)", w.totalEnergyKWh ?? "-"),
     summaryItem("Peak (kW)", w.peakPowerKW ?? "-"),
@@ -201,7 +194,7 @@ function renderTopTable(rows, mode) {
   topTableBody.innerHTML = "";
   rows.forEach((r) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.rank}</td><td>${r.heightCm}</td><td>${r.tiltDeg}</td><td>${r.azimuthDeg}</td><td>${r.albedo}</td><td>${r.totalEnergyKWh}</td><td>${r.peakPowerKW}</td><td>${r.rearGainPercent}</td><td>${Number.isFinite(r.frontSharePercent) ? r.frontSharePercent : "-"}</td><td>${formatValue(r.objectiveValue, obj.digits)}</td>`;
+    tr.innerHTML = `<td>${r.rank}</td><td>${r.heightCm}</td><td>${r.tiltDeg}</td><td>${r.albedo}</td><td>${r.totalEnergyKWh}</td><td>${r.peakPowerKW}</td><td>${r.rearGainPercent}</td><td>${Number.isFinite(r.frontSharePercent) ? r.frontSharePercent : "-"}</td><td>${formatValue(r.objectiveValue, obj.digits)}</td>`;
     topTableBody.appendChild(tr);
   });
 }
@@ -302,17 +295,26 @@ function getRangesPayload() {
   return {
     heightCm: { min: Number(heightMinInput.value), max: Number(heightMaxInput.value), step: Number(heightStepInput.value) },
     tiltDeg: { min: Number(tiltMinInput.value), max: Number(tiltMaxInput.value), step: Number(tiltStepInput.value) },
-    azimuthDeg: { min: Number(azimuthMinInput.value), max: Number(azimuthMaxInput.value), step: Number(azimuthStepInput.value) },
     albedo
   };
 }
 
 /* ─── API Calls ─── */
 async function postJson(url, body) {
-  const res = await fetch(`${API_BASE_URL}${url}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const data = await res.json();
-  if (!res.ok || data.success === false) throw new Error(data.message || "Request failed");
-  return data.data;
+  const fullUrl = `${API_BASE_URL}${url}`;
+  let res;
+  try {
+    res = await fetch(fullUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  } catch (err) {
+    console.error("Network error during fetch", fullUrl, err);
+    throw new Error(`Network error contacting ${fullUrl}: ${err.message}`);
+  }
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok || (data && data.success === false)) {
+    throw new Error((data && data.message) || `Request failed (${res.status})`);
+  }
+  return data ? data.data : null;
 }
 
 async function handleFetchIrradiance() {

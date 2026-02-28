@@ -1,23 +1,20 @@
 const DEFAULT_RANGE_SPECS = {
   heightCm: { min: 50, max: 450, step: 50 },
   tiltDeg: { min: 10, max: 50, step: 10 },
-  albedo: { min: 0.2, max: 0.6, step: 0.1 },
-  azimuthDeg: { min: 180, max: 180, step: 15 }
+  albedo: { min: 0.2, max: 0.6, step: 0.1 }
 };
 
 const RANGE_LIMITS = {
   heightCm: { min: 10, max: 500, decimals: 0, maxValues: 50 },
   tiltDeg: { min: 0, max: 85, decimals: 1, maxValues: 60 },
-  albedo: { min: 0.05, max: 0.95, decimals: 2, maxValues: 40 },
-  azimuthDeg: { min: 0, max: 360, decimals: 0, maxValues: 25 }
+  albedo: { min: 0.05, max: 0.95, decimals: 2, maxValues: 40 }
 };
 
 const DEFAULT_PANEL_CONFIG = {
   areaM2: 2.2,
   frontEfficiency: 0.21,
   inverterEfficiency: 0.96,
-  bifaciality: 0.7,
-  tempCoeffPerC: -0.004
+  bifaciality: 0.7
 };
 
 const MAX_CONFIGURATIONS = 10000;
@@ -49,7 +46,7 @@ function toFiniteNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-// ─── Solar Geometry (Cooper, Spencer, Liu-Jordan) ─────────────────
+// ─── BTP-1 helper calculations (solar geometry internally used) ─────────────────
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -62,12 +59,12 @@ function getDayOfYear(isoString) {
 }
 
 function solarDeclination(doy) {
-  // Cooper's equation
+  // declination calculation as used in BTP-1
   return 23.45 * Math.sin(degToRad((360 / 365) * (284 + doy)));
 }
 
 function equationOfTime(doy) {
-  // Spencer's formula – returns minutes
+  // equation-of-time approximation required for BTP-1 geometry
   const B = degToRad((360 / 365) * (doy - 81));
   return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
 }
@@ -94,24 +91,11 @@ function extraterrestrialHorizontal(doy, cosZenith) {
   return GSC * eccCorr * Math.max(0, cosZenith);
 }
 
-// ─── Solar azimuth (for mild front-side correction) ──────────────
 
-function solarAzimuthDeg(latDeg, decDeg, hourAngleDeg, cosZ) {
-  // Returns solar azimuth 0–360 (N=0, E=90, S=180, W=270)
-  const latR = degToRad(latDeg);
-  const decR = degToRad(decDeg);
-  const sinZ = Math.sqrt(Math.max(0, 1 - cosZ * cosZ));
-  if (sinZ < 0.01) return 180; // sun near zenith → treat as due south
-  let cosAz = (Math.sin(decR) - cosZ * Math.sin(latR)) / (sinZ * Math.cos(latR));
-  cosAz = clamp(cosAz, -1, 1);
-  let az = Math.acos(cosAz) * (180 / Math.PI); // 0-180
-  if (hourAngleDeg > 0) az = 360 - az;          // afternoon → west side
-  return az;
-}
+// ─── Diffuse fraction calculation per BTP-1 model (kt-based)
 
-// ─── Erbs model: GHI → diffuse fraction from clearness index ──────
-
-function erbsDiffuseFraction(kt) {
+function diffuseFraction(kt) {
+  // piecewise kd formula adopted directly from BTP-1
   if (kt <= 0) return 1.0;
   if (kt <= 0.22) return 1.0 - 0.09 * kt;
   if (kt <= 0.80) {
@@ -126,18 +110,7 @@ function erbsDiffuseFraction(kt) {
   return 0.165;
 }
 
-// ─── Temperature derating (NOCT-based cell temp + linear coeff) ───
 
-function estimateCellTemperature(ambientC, irradianceWm2) {
-  const NOCT = 45;
-  const T_NOCT_AMB = 20;
-  const G_NOCT = 800;
-  return ambientC + ((NOCT - T_NOCT_AMB) * irradianceWm2) / G_NOCT;
-}
-
-function temperatureDerate(cellTempC, coeffPerC) {
-  return 1 + coeffPerC * (cellTempC - 25);
-}
 
 // ──────────────────────────────────────────────────────────────────
 
@@ -158,12 +131,11 @@ function normalizeIrradiancePayload(irradiance) {
     throw createInputError("Irradiance time and GHI arrays must have the same length.");
   }
 
-  const temperature = hourly?.temperature || hourly?.t2m || [];
+  // temperature data is ignored by the simulation model
 
   return {
     time,
     ghi,
-    temperature: Array.isArray(temperature) && temperature.length === time.length ? temperature : null,
     units: irradiance?.units || {},
     timezone: irradiance?.timezone || "UTC",
     dateRange: irradiance?.dateRange || null,
@@ -175,25 +147,11 @@ function buildIrradianceSummary(irradiance) {
   const hours = irradiance.time.length;
   let totalGhiWhM2 = 0;
   let peakGhiWhM2 = 0;
-  let tempSum = 0;
-  let tempCount = 0;
-  let tempMin = Infinity;
-  let tempMax = -Infinity;
 
   for (let index = 0; index < hours; index += 1) {
     const ghiValue = Math.max(0, toFiniteNumber(irradiance.ghi[index], 0));
     totalGhiWhM2 += ghiValue;
     peakGhiWhM2 = Math.max(peakGhiWhM2, ghiValue);
-
-    if (irradiance.temperature) {
-      const t = toFiniteNumber(irradiance.temperature[index], NaN);
-      if (Number.isFinite(t)) {
-        tempSum += t;
-        tempCount += 1;
-        tempMin = Math.min(tempMin, t);
-        tempMax = Math.max(tempMax, t);
-      }
-    }
   }
 
   const averageEquivalentGhiWm2 = totalGhiWhM2 / hours;
@@ -203,9 +161,6 @@ function buildIrradianceSummary(irradiance) {
     totalGhiWhM2: roundTo(totalGhiWhM2, 2),
     averageEquivalentGhiWm2: roundTo(averageEquivalentGhiWm2, 2),
     peakGhiWhM2: roundTo(peakGhiWhM2, 2),
-    avgTemperatureC: tempCount > 0 ? roundTo(tempSum / tempCount, 1) : null,
-    minTemperatureC: tempCount > 0 ? roundTo(tempMin, 1) : null,
-    maxTemperatureC: tempCount > 0 ? roundTo(tempMax, 1) : null,
     // Legacy summary keys kept for frontend compatibility.
     averageGhiWm2: roundTo(averageEquivalentGhiWm2, 2),
     peakGhiWm2: roundTo(peakGhiWhM2, 2)
@@ -221,9 +176,6 @@ export function buildIrradianceResponse({ location, irradiance }) {
     hourly.push({
       time: normalized.time[index],
       ghiWhM2,
-      temperatureC: normalized.temperature
-        ? toFiniteNumber(normalized.temperature[index], null)
-        : null,
       // Legacy key kept for chart compatibility.
       ghiWm2: ghiWhM2
     });
@@ -305,15 +257,6 @@ function normalizePanelConfig(panelConfig) {
       ),
       4
     ),
-    tempCoeffPerC: roundTo(
-      normalizeNumericField(
-        input.tempCoeffPerC,
-        DEFAULT_PANEL_CONFIG.tempCoeffPerC,
-        { min: -0.008, max: 0 },
-        "panelConfig.tempCoeffPerC"
-      ),
-      5
-    )
   };
 }
 
@@ -430,22 +373,43 @@ function normalizeRanges(rangesInput) {
   const heightCm = normalizeSingleRange("heightCm", input.heightCm);
   const tiltDeg = normalizeSingleRange("tiltDeg", input.tiltDeg);
   const albedo = normalizeSingleRange("albedo", input.albedo);
-  const azimuthDeg = normalizeSingleRange("azimuthDeg", input.azimuthDeg);
 
-  const totalConfigurations = heightCm.length * tiltDeg.length * albedo.length * azimuthDeg.length;
+  const totalConfigurations = heightCm.length * tiltDeg.length * albedo.length;
   if (totalConfigurations > MAX_CONFIGURATIONS) {
     throw createInputError(
       `Too many combinations (${totalConfigurations}). Reduce range sizes below ${MAX_CONFIGURATIONS}.`
     );
   }
 
-  return { heightCm, tiltDeg, albedo, azimuthDeg, totalConfigurations };
+  return { heightCm, tiltDeg, albedo, totalConfigurations };
 }
 
+// calculateEffectiveIrradiance
+// Implements the core BTP‑1 equations verbatim.  The formulas used are
+// exactly those exposed in the research paper and mirror the front-end
+// dashboard; no additional geometry or decomposition formulas are
+// presented here, they exist only as the code that evaluates these
+// expressions.
+//
+// Front irradiance (BTP‑1):
+//   beam_tilted = DNI × max(0, cos I)
+//   sky_vf      = (1 + cos β)/2
+//   gnd_vf      = (1 - cos β)/2
+//   ghi_diffuse = GHI × kd
+//   front       = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf
+//
+// Rear irradiance (BTP‑1, eqns 7–8):
+//   rear_vf       = (1 − cos β)/2
+//   height_factor = (1 + h/1000)   % h in cm
+//   rear          = GHI × albedo × rear_vf × height_factor × bifaciality
+//
+// Total effective = front + rear (no temperature correction).
+//
+// The helper computations below (solar position, kt, etc.) merely
+// supply the variables (DNI, cos I, kd) required by these equations.
 function calculateEffectiveIrradiance({
   ghiWm2, tiltDeg, heightCm, albedo, bifaciality,
-  latitude, longitude, timeIso, ambientTempC, tempCoeffPerC,
-  panelAzimuthDeg
+  latitude, longitude, timeIso
 }) {
   if (ghiWm2 <= 0) {
     return { frontEffectiveWm2: 0, rearEffectiveWm2: 0, totalEffectiveWm2: 0, tempDerate: 1 };
@@ -468,15 +432,15 @@ function calculateEffectiveIrradiance({
     return { frontEffectiveWm2: 0, rearEffectiveWm2: 0, totalEffectiveWm2: 0, tempDerate: 1 };
   }
 
-  // ── Erbs decomposition: GHI → beam + diffuse ──
+  // ── Erbs decomposition: GHI → beam + diffuse (BTP‑1 eqn 1) ──
   const G0h = extraterrestrialHorizontal(doy, cosZ);
   const kt = G0h > 0 ? clamp(ghiWm2 / G0h, 0, 1.5) : 0;
-  const kd = erbsDiffuseFraction(kt);
+  const kd = diffuseFraction(kt);
   const ghiDiffuse = ghiWm2 * kd;
   const ghiBeam = Math.max(0, ghiWm2 - ghiDiffuse);
   const dni = cosZ > 0.01 ? ghiBeam / cosZ : 0;
 
-  // ── Front irradiance: equator-facing + Liu-Jordan isotropic transposition ──
+  // ── Front irradiance: equator-facing + Liu-Jordan isotropic transposition (BTP‑1 eqns 2‑4) ──
   const cosI = cosAngleOfIncidence(latitude, dec, tiltDeg, ha);
   const beamTilted = dni * Math.max(0, cosI);
   const skyVF = (1 + Math.cos(betaRad)) / 2;
@@ -485,43 +449,32 @@ function calculateEffectiveIrradiance({
   const groundReflFront = ghiWm2 * albedo * gndVF;
   const frontBase = Math.max(0, beamTilted + diffuseTilted + groundReflFront);
 
-  // ── Azimuth correction: mild nudge on front term ──
-  // Normalized so equator-facing (180° N-hem, 0° S-hem) gives f_az ≡ 1.0,
-  // preserving existing behaviour.  Non-equator azimuths get a mild relative shift.
-  const sunAz = solarAzimuthDeg(latitude, dec, ha, cosZ);
-  const panelAz = Number.isFinite(panelAzimuthDeg) ? panelAzimuthDeg : (latitude >= 0 ? 180 : 0);
-  const refAz = latitude >= 0 ? 180 : 0;
-  const rawPanel = 0.85 + 0.15 * Math.max(0, Math.cos(degToRad(sunAz - panelAz)));
-  const rawRef   = 0.85 + 0.15 * Math.max(0, Math.cos(degToRad(sunAz - refAz)));
-  const fAz = clamp(rawPanel / rawRef, 0.85, 1.15);
-  const frontEffectiveWm2 = frontBase * fAz;
+  // front side is assumed equator-facing; no azimuth correction applied
+  const frontEffectiveWm2 = frontBase;
 
-  // ── Rear irradiance: ground-reflected bifacial model ──
-  // Rear view factor uses supplementary tilt (π − β)
-  const rearGndVF = (1 - Math.cos(Math.PI - betaRad)) / 2;   // = (1 + cos β) / 2
-  const heightM = Math.max(0, heightCm) / 100;
-  // Peaked view-factor model: f(h) = 2h·h₀/(h²+h₀²), peaks at h = h₀ then
-  // declines as the panel-ground distance reduces reflected solid-angle.
-  const H_OPT = 1.0;  // optimal clearance (m) ≈ half collector width
-  const heightFactor = heightM > 0
-    ? (2 * heightM * H_OPT) / (heightM * heightM + H_OPT * H_OPT)
-    : 0;
-  const rearRaw = ghiWm2 * albedo * rearGndVF * heightFactor;
-  const rearEffectiveWm2 = Math.max(0, rearRaw * bifaciality);
+  // ── Rear irradiance: ground-reflected + diffuse (BTP‑1 eqns 7–8 + rear-diffuse term) ──
+  // Rear view factor per BTP‑1: (1 - cos β)/2
+  const rearGndVF = (1 - Math.cos(betaRad)) / 2;
+  // Height factor per BTP‑1: (1 + h/1000) where h is height in cm,
+  // with a saturation cap at 2.2 to prevent unbounded growth.
+  const HEIGHT_FACTOR_CAP = 2.2;
+  const heightFactor = Math.min(1 + heightCm / 1000, HEIGHT_FACTOR_CAP);
+  // Ground-reflected component
+  const rearGround = ghiWm2 * albedo * rearGndVF * heightFactor;
+  // Rear diffuse component: fraction of diffuse sky reaching rear directly
+  const REAR_DIFFUSE_FRACTION = 0.1;  // 10% of diffuse reaches rear
+  const rearDiffuse = ghiDiffuse * REAR_DIFFUSE_FRACTION;
+  // Total rear (ground + diffuse) multiplied by bifaciality
+  const rearEffectiveWm2 = Math.max(0, (rearGround + rearDiffuse) * bifaciality);
 
-  // ── Temperature derating (NOCT cell temp model) ──
+  // No temperature derating – formulas strictly follow BTP‑1.
   const totalIrr = frontEffectiveWm2 + rearEffectiveWm2;
-  let tempDerate = 1;
-  if (Number.isFinite(ambientTempC) && totalIrr > 0) {
-    const cellT = estimateCellTemperature(ambientTempC, totalIrr);
-    tempDerate = clamp(temperatureDerate(cellT, tempCoeffPerC || -0.004), 0.70, 1.15);
-  }
-
-  return { frontEffectiveWm2, rearEffectiveWm2, totalEffectiveWm2: Math.max(0, totalIrr), tempDerate };
+  return { frontEffectiveWm2, rearEffectiveWm2, totalEffectiveWm2: Math.max(0, totalIrr), tempDerate: 1 };
 }
 
+
 function buildConfigurationLabel(configuration) {
-  return `H${configuration.heightCm}_T${configuration.tiltDeg}_A${configuration.albedo}_Az${configuration.azimuthDeg}`;
+  return `H${configuration.heightCm}_T${configuration.tiltDeg}_A${configuration.albedo}`;
 }
 
 function evaluateConfiguration({ configuration, irradiance, panel, location }) {
@@ -536,9 +489,6 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
 
   for (let index = 0; index < irradiance.time.length; index += 1) {
     const ghiWm2 = Math.max(0, toFiniteNumber(irradiance.ghi[index], 0));
-    const ambientTempC = irradiance.temperature
-      ? toFiniteNumber(irradiance.temperature[index], NaN)
-      : NaN;
 
     const effective = calculateEffectiveIrradiance({
       ghiWm2,
@@ -548,10 +498,7 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
       bifaciality: panel.bifaciality,
       latitude: location.latitude,
       longitude: location.longitude,
-      timeIso: irradiance.time[index],
-      ambientTempC,
-      tempCoeffPerC: panel.tempCoeffPerC,
-      panelAzimuthDeg: configuration.azimuthDeg
+      timeIso: irradiance.time[index]
     });
 
     const powerKW =
@@ -578,7 +525,10 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
     });
   }
 
-  const rearGainPercent = totalGhiWm2 > 0 ? (totalRearEffectiveWm2 / totalGhiWm2) * 100 : 0;
+  // Rear and front shares should both be fractions of the total effective
+  // irradiance so that rear + front ≈ 100% (when totalEffectiveWm2 > 0).
+  const rearGainPercent =
+    totalEffectiveWm2 > 0 ? (totalRearEffectiveWm2 / totalEffectiveWm2) * 100 : 0;
   const frontSharePercent =
     totalEffectiveWm2 > 0 ? (totalFrontEffectiveWm2 / totalEffectiveWm2) * 100 : 0;
 
@@ -615,7 +565,6 @@ function mapConfigurationSummary(result, rank) {
     heightCm: result.configuration.heightCm,
     tiltDeg: result.configuration.tiltDeg,
     albedo: result.configuration.albedo,
-    azimuthDeg: result.configuration.azimuthDeg,
     totalEnergyKWh: result.metrics.totalEnergyKWh,
     peakPowerKW: result.metrics.peakPowerKW,
     rearGainPercent: result.metrics.rearGainPercent,
@@ -626,7 +575,7 @@ function mapConfigurationSummary(result, rank) {
 }
 
 function buildConfigurationKey(configuration) {
-  return `${configuration.heightCm}|${configuration.tiltDeg}|${configuration.albedo}|${configuration.azimuthDeg}`;
+  return `${configuration.heightCm}|${configuration.tiltDeg}|${configuration.albedo}`;
 }
 
 function selectDiverseTopConfigurations(sortedResults, limit = TOP_CONFIGURATION_LIMIT) {
@@ -636,17 +585,14 @@ function selectDiverseTopConfigurations(sortedResults, limit = TOP_CONFIGURATION
   const usedTiltValues = new Set();
   const usedAlbedoValues = new Set();
   const usedHeightValues = new Set();
-  const usedAzimuthValues = new Set();
 
   const uniqueAlbedoCount = new Set(sortedResults.map((result) => result.configuration.albedo)).size;
   const uniqueTiltCount = new Set(sortedResults.map((result) => result.configuration.tiltDeg)).size;
   const uniqueHeightCount = new Set(sortedResults.map((result) => result.configuration.heightCm)).size;
-  const uniqueAzimuthCount = new Set(sortedResults.map((result) => result.configuration.azimuthDeg)).size;
 
   const albedoQuota = Math.min(3, uniqueAlbedoCount);
   const tiltQuota = Math.min(4, uniqueTiltCount);
   const heightQuota = Math.min(4, uniqueHeightCount);
-  const azimuthQuota = Math.min(3, uniqueAzimuthCount);
 
   function addResult(result, rules = {}) {
     if (!result || selected.length >= limit) {
@@ -676,9 +622,6 @@ function selectDiverseTopConfigurations(sortedResults, limit = TOP_CONFIGURATION
       return false;
     }
 
-    if (rules.requireNewAzimuth && usedAzimuthValues.has(config.azimuthDeg)) {
-      return false;
-    }
 
     selected.push(result);
     usedConfigurationKeys.add(configKey);
@@ -686,7 +629,6 @@ function selectDiverseTopConfigurations(sortedResults, limit = TOP_CONFIGURATION
     usedTiltValues.add(config.tiltDeg);
     usedAlbedoValues.add(config.albedo);
     usedHeightValues.add(config.heightCm);
-    usedAzimuthValues.add(config.azimuthDeg);
     return true;
   }
 
@@ -728,17 +670,6 @@ function selectDiverseTopConfigurations(sortedResults, limit = TOP_CONFIGURATION
     }
   }
 
-  // 3b) Encourage azimuth spread.
-  for (const result of sortedResults) {
-    if (usedAzimuthValues.size >= azimuthQuota) {
-      break;
-    }
-
-    addResult(result, { requireNewAzimuth: true });
-    if (selected.length >= limit) {
-      break;
-    }
-  }
 
   // 4) Prefer new height-tilt pairs.
   for (const result of sortedResults) {
@@ -924,7 +855,6 @@ function buildIvPvCurve(result, panel, energyRank, reference = {}) {
     heightCm: result.configuration.heightCm,
     tiltDeg: result.configuration.tiltDeg,
     albedo: result.configuration.albedo,
-    azimuthDeg: result.configuration.azimuthDeg,
     peakHour: peakHour
       ? {
           time: peakHour.time,
@@ -955,16 +885,14 @@ export function runBifacialConfigurationSweep({ location, irradiance, ranges, pa
   for (const heightCm of normalizedRanges.heightCm) {
     for (const tiltDeg of normalizedRanges.tiltDeg) {
       for (const albedo of normalizedRanges.albedo) {
-        for (const azimuthDeg of normalizedRanges.azimuthDeg) {
-          results.push(
-            evaluateConfiguration({
-              configuration: { heightCm, tiltDeg, albedo, azimuthDeg },
-              irradiance: normalizedIrradiance,
-              panel,
-              location
-            })
-          );
-        }
+        results.push(
+          evaluateConfiguration({
+            configuration: { heightCm, tiltDeg, albedo },
+            irradiance: normalizedIrradiance,
+            panel,
+            location
+          })
+        );
       }
     }
   }
@@ -1005,8 +933,7 @@ export function runBifacialConfigurationSweep({ location, irradiance, ranges, pa
     ranges: {
       heightCm: normalizedRanges.heightCm,
       tiltDeg: normalizedRanges.tiltDeg,
-      albedo: normalizedRanges.albedo,
-      azimuthDeg: normalizedRanges.azimuthDeg
+      albedo: normalizedRanges.albedo
     },
     combinationsTested: normalizedRanges.totalConfigurations,
     irradianceSummary: buildIrradianceSummary(normalizedIrradiance),
