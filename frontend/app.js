@@ -54,6 +54,46 @@ const OBJECTIVE_META = {
   peakPower: { label: "Max Peak Power (kW)", metricLabel: "Peak Power (kW)", metricKey: "peakPowerKW", digits: 4 }
 };
 
+// map common surface type names to albedo values (2-decimal strings)
+const ALBEDO_PRESETS_MAP = {
+  "0.20": "Grass",
+  "0.26": "Fresh grass",
+  "0.30": "Concrete",
+  "0.18": "Urban",
+  "0.12": "Dry asphalt",
+  "0.33": "Red tiles",
+  "0.82": "Fresh snow",
+  "0.65": "Wet snow",
+  "0.85": "Aluminum",
+  "0.35": "Galvanized steel"
+};
+
+function formatAlbedo(value) {
+  const num = toNumber(value, null);
+  if (!Number.isFinite(num)) return "-";
+  const key = num.toFixed(2);
+  // exact match first
+  let name = ALBEDO_PRESETS_MAP[key];
+  if (name) return `${name} (${key})`;
+  // no exact match - find closest preset by numeric difference
+  let closest = null;
+  let closestDiff = Infinity;
+  for (const k in ALBEDO_PRESETS_MAP) {
+    const v = Number(k);
+    if (!Number.isFinite(v)) continue;
+    const d = Math.abs(v - num);
+    if (d < closestDiff) {
+      closestDiff = d;
+      closest = k;
+    }
+  }
+  if (closest !== null) {
+    name = ALBEDO_PRESETS_MAP[closest];
+    return `${name} (${num.toFixed(2)})`;
+  }
+  return key;
+}
+
 /* ─── Utilities ─── */
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
@@ -106,10 +146,19 @@ function getObjectiveMeta(mode) { return OBJECTIVE_META[mode] || OBJECTIVE_META.
 
 /* ─── Ranking ─── */
 function getBaseRowsForRanking(data) {
-  if (Array.isArray(data?.chartData) && data.chartData.length) return data.chartData;
-  if (Array.isArray(data?.pureRankingTopConfigurations) && data.pureRankingTopConfigurations.length) return data.pureRankingTopConfigurations;
-  if (Array.isArray(data?.topConfigurations) && data.topConfigurations.length) return data.topConfigurations;
+  // chartData holds hourly points (used for plotting); it must *not* be used
+  // for ranking because the structure is different and leads to incorrect
+  // values in the table (e.g. average irradiance being shown as energy).
+  // Always prefer configuration summaries when available.
+  if (Array.isArray(data?.pureRankingTopConfigurations) && data.pureRankingTopConfigurations.length) {
+    return data.pureRankingTopConfigurations;
+  }
+  if (Array.isArray(data?.topConfigurations) && data.topConfigurations.length) {
+    return data.topConfigurations;
+  }
   if (data?.optimalConfiguration) return [data.optimalConfiguration];
+  // fall back to chartData only if no configuration summaries exist
+  if (Array.isArray(data?.chartData) && data.chartData.length) return data.chartData;
   return [];
 }
 
@@ -181,7 +230,7 @@ function renderAnalysisSummary(data, mode, winner) {
     summaryItem("Combinations", data.combinationsTested ?? "-"),
     summaryItem("Optimal Height", `${w.heightCm ?? "-"} cm`),
     summaryItem("Optimal Tilt", `${w.tiltDeg ?? "-"}°`),
-    summaryItem("Albedo", w.albedo ?? "-"),
+    summaryItem("Albedo", formatAlbedo(w.albedo)),
     summaryItem("Energy (kWh)", w.totalEnergyKWh ?? "-"),
     summaryItem("Peak (kW)", w.peakPowerKW ?? "-"),
     summaryItem("Rear Gain", `${w.rearGainPercent ?? "-"}%`)
@@ -194,7 +243,8 @@ function renderTopTable(rows, mode) {
   topTableBody.innerHTML = "";
   rows.forEach((r) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.rank}</td><td>${r.heightCm}</td><td>${r.tiltDeg}</td><td>${r.albedo}</td><td>${r.totalEnergyKWh}</td><td>${r.peakPowerKW}</td><td>${r.rearGainPercent}</td><td>${Number.isFinite(r.frontSharePercent) ? r.frontSharePercent : "-"}</td><td>${formatValue(r.objectiveValue, obj.digits)}</td>`;
+    // note: header does not include a front-share column, so we omit it here
+    tr.innerHTML = `<td>${r.rank}</td><td>${r.heightCm}</td><td>${r.tiltDeg}</td><td>${formatAlbedo(r.albedo)}</td><td>${r.totalEnergyKWh}</td><td>${r.peakPowerKW}</td><td>${r.rearGainPercent}</td><td>${formatValue(r.objectiveValue, obj.digits)}</td>`;
     topTableBody.appendChild(tr);
   });
 }
