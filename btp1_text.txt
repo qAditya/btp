@@ -1,0 +1,934 @@
+Academic Editor: Xiaohu Yang
+Received: 25 June 2025
+Revised: 8 August 2025
+Accepted: 16 August 2025
+Published: 21 August 2025
+Citation: Dincer, F.; Ozer, E.
+Optimization of Rear-Side Energy
+Contribution in Bifacial PV Panels: A
+Parametric Analysis on Albedo, Tilt,
+Height, and Mounting Configuration.
+Energies 2025 ,18, 4443. https://
+doi.org/10.3390/en18164443
+Copyright: © 2025 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license
+(https://creativecommons.org/
+licenses/by/4.0/).
+Article
+Optimization of Rear-Side Energy Contribution in Bifacial PV
+Panels: A Parametric Analysis on Albedo, Tilt, Height, and
+Mounting Configuration
+Furkan Dincer1,*
+and Emre Ozer2
+1Department of Electrical and Electronics Engineering, Kahramanmaras Sutcu Imam University,
+Kahramanmaras 46050, Türkiye
+2Gaziantep Islam Science and Technology University, Gaziantep 27260, Türkiye; emre.ozer@gibtu.edu.tr
+*Correspondence: furkandincer@ksu.edu.tr
+Abstract
+Bifacial photovoltaic panels are preferred over monofacial panels due to the ability of
+their back surfaces to absorb radiation and generate electricity. However, optimizing the
+rear-side energy contribution remains a critical area of research. This study systematically
+investigates how four key parameters (albedo, tilt angle, panel height, and mounting
+configuration) affect rear-side energy generation and overall panel efficiency. In the first
+scenario, the impact of surface reflectivity was evaluated. High-reflectivity materials
+such as aluminum (21.2%) and fresh snow (20.5%) significantly increased rear-side energy
+yield. The second scenario examined tilt angle, showing that increasing the tilt up to 50◦
+enhanced back-side generation, reaching a gain of 5.5%. The third scenario focused on
+the effect of panel height, revealing a linear relationship with energy generation. The
+fourth assessed orientation, comparing horizontal and vertical installations. Horizontal
+mounting provided a higher rear-side energy yield (4.5%) due to increased exposure to
+ground-reflected radiation. The findings of this study provide important information for
+the optimization of bifacial photovoltaic panels and the information will provide guidance
+for easier and more efficient installation of solar power plants.
+Keywords: bifacial photovoltaic panels; albedo effect; tilt angle optimization; rear-surface
+energy generation
+1. Introduction
+Many factors, such as population growth, advances in technology and industry, and
+changing lifestyles, have led to the sustained rise in the demand for electrical energy. To
+address this rising demand in accordance with net zero emission targets, there is a global
+shift towards renewable energy sources to replace conventional energy sources within
+developed and developing countries [ 1,2]. Solar photovoltaic (PV) systems are among
+the most widely used renewable energy sources in this context. In an effort to meet this
+increased demand, both developed and developing countries are putting massive efforts
+and resources into this particular field [3–5].
+PV panels are developed to convert solar energy into electrical energy. These panels
+are generally classified as monofacial and bifacial. Of these technologies, bifacial panels
+are advanced. The bifacial panels have a special feature compared to monofacial panels,
+as they generate electricity from the front side and the back side. It has also been proven
+that the replacement of monofacial panels with bifacial panels in solar power plants results
+Energies 2025 ,18, 4443 https://doi.org/10.3390/en18164443
+Energies 2025 ,18, 4443 2 of 19
+in a significant increase in energy efficiency in the use of bifacial panels. This is because
+electrical energy is generated from the back surface of the PV panel by means of reflection [ 6].
+The first industrial production of BPV panels was initiated in 1984 [ 7] was an important
+milestone in solar technology and has increased steadily over the years as their availability
+in the global market has continued to increase. Predictions show that about 35% of the
+global market for bifacial panels will be captured by 2027 [8].
+A number of research studies have been conducted in the literature on the electrical
+performance of bifacial photovoltaic (BPV) panels in both experimental and simulated
+conditions. Ganesan et al. [ 8] studied the performance of BPV panels at different heights
+and concluded that the maximum power output achieved was 375 watts at heights above
+1 m, with a bifaciality factor of approximately 25%. Ganesan et al. [ 9] then conducted
+a study on the reflective properties of five different surfaces (grass, sand, cement, white
+paint, and aluminum) as substrates in their experimental configuration. They found that
+aluminum surfaces give the best energy generation, with appreciable albedos between
+0.50 and 0.57, having an average bifacial gain of 21.4%. Bifacial gain, a critical metric of
+BPV performance, is defined as the fraction of additional energy generated by BPV panels
+compared to monofacial PV panels [ 9,10]. Pelaez et al. [ 10] investigated the impact of
+albedo, slope, row pitch, and spacing on BPV performance in the U.S. and compared five
+different models, including the radiation tracking model, the visibility factor model, and the
+experimental model. The study’s findings indicated that a bifacial gain of approximately
+20% was attained under specific configurations. Durusoy et al. [ 11] built a model to estimate
+the back-surface radiation in an experimental study in Ankara. Marzia et al. [ 12] examined
+the performance of BPV on different surfaces (concrete, white tiles, soil, and white pebbles)
+under UK meteorological conditions. The findings indicated that white pebbles and white
+tiles yielded the highest energy production, exhibiting a gain exceeding 30%.
+Despite the numerous studies conducted on the physical parameters affecting BPV
+system performance, the majority of these studies have focused on a single variable or
+have evaluated scenarios within limited ranges. For instance, Ganesan et al. examined
+the influence of panel height on the albedo effect [ 8], considering variations in ground
+materials [ 9]. Pelaez et al. [ 10] concentrated on the precision of radiation models, while
+Durusoy et al. [ 11] concentrated on back-surface radiation in constrained height ranges.
+Alam et al. [ 12] compared bifacial and monofacial systems under varying albedo conditions.
+Wang et al. [ 13] considered mounting height and albedo, but only fixed values for tilt angle.
+Although Yusufoglu et al. [ 14] considered tilt, albedo, and height together, their analysis
+was performed in Germany, a region with very different radiation conditions from Türkiye.
+The novel aspect of this study is its comprehensive evaluation of the numerous in-
+stallation parameters that influence the performance of BPV systems. This evaluation is
+conducted in an integrated manner, encompassing a wide range of intervals, and is per-
+formed on a unified platform. Furthermore, it offers a user-friendly analysis infrastructure
+with an accessible software tool and presents an approach that supports practical decision-
+making processes based on local climate data without requiring high software knowledge or
+computational power. In this respect, the study establishes a connection between academic
+modeling and field realities, thereby making a practical and methodological contribution
+to extant studies in the literature.
+In this study, a parametric analysis was conducted to optimize rear-side energy con-
+tribution in BPV systems. The influences of surface albedo, panel tilt angle, mounting
+height, and installation orientation (horizontal vs. vertical) were analyzed separately. In
+each analysis, all other parameters were held constant to isolate the specific impact of the
+parameter under investigation. This methodological approach ensures that the effect of
+Energies 2025 ,18, 4443 3 of 19
+each design parameter on rear-side irradiance can be evaluated independently and in detail,
+thereby contributing to a better understanding of rear-side optimization in BPV systems.
+It is believed that this study will contribute to the determination of the ground and
+mounting characteristics in the installation of BPV panels. Despite the limited number of
+studies on BPV panels in Türkiye conditions, no study has been identified in the literature
+that simultaneously examines the effects of albedo, module height, tilt angle, and mounting
+configuration on the energy efficiency of BPV panels. This study differentiates itself from
+the existing literature by offering a comprehensive parametric analysis that simultaneously
+evaluates the impact of surface albedo, tilt angle, installation height, and mounting configu-
+ration on the rear-side energy contribution of BPV panels. A key distinction of this research
+is the use of experimentally measured Global Horizontal Irradiation (GHI) datasets rather
+than standard Typical Meteorological Year (TMY) or simulated solar input. This approach
+allows for more realistic modeling under local climate conditions. Unlike previous studies
+that often focus on a single parameter or consider generalized assumptions, this work
+provides a structured comparison across various surface types and geometrical configura-
+tions, all simulated under identical environmental input. The developed Python 3.11-based
+framework enables flexible scenario testing and reproducible analysis. By isolating and
+quantifying the specific influence of each design factor, the study provides new insights
+that support more accurate and context-specific decisions for BPV deployment, particularly
+in mid-latitude regions such as Türkiye.
+2. Modeling and Methodology
+The bifaciality coefficient/factor ( φ) defined in IEC TS 60904-1-2 is used to determine
+the performance of the back side of a PV panel [ 6,15]. The bifaciality factor is defined as the
+ratio of rear-side to front-side output of a PV panel calculated under standard test case (STC)
+conditions. This calculation provides information on three key characteristics; (i) current,
+(ii) voltage, (iii) maximum power. The bifaciality factor for short-circuit current ( Isc),
+open circuit voltage ( Voc), and maximum power ( Pmax) are expressed in Equations (1)–(3) ,
+respectively. Within these equations, Isc,rsignifies the BPV back-surface short-circuit
+current, whereas Isc,fdenotes the BPV front-surface short-circuit current. It is important to
+note that the index “ r” in these equations refers to the back surface, while the index “ f”
+refers to the front surface.
+φIsc=Isc,r
+Isc,f(1)
+φVoc=Voc,r
+Voc,f(2)
+φPmax=Pmax,r
+Pmax,f(3)
+The rear-side current ( Ir) generated by absorbed light from the rear ( SBr) is calculated
+as shown in Equation (4). Impp ,fis the front-side current of the BPV module at the maximum
+power point (MPP) under standard test conditions.
+Ir=φIsc·SBr
+1000 W/m2·Impp ,f (4)
+Temperature variations significantly affect the open-circuit voltage of PV cells, while
+the impact on short-circuit current is comparatively minimal. As temperature increases, a
+notable drop is observed in voltage, whereas the current remains relatively stable. Each
+PV cell has defined temperature coefficients that describe the changes in current, voltage,
+and power with respect to temperature. In this study, the constant voltage temperature
+coefficient provided by the manufacturer’s datasheet was used for the selected PV panel
+Energies 2025 ,18, 4443 4 of 19
+model. The BPV panel output voltage ( Vbpv) is calculated from Equation (5), shown below
+as a function of temperature, under the assumption of minimal irradiation effect [16].
+Vbpv=Vstc·
+1+δVOC(t−25◦C)
+100
+(5)
+where, δVOCis the temperature coefficient of the on voltage and Vstcis the voltage below STC.
+The electrical energy generated by BPV panels depends on many parameters, as shown in
+Figure 1. These panels utilize both direct solar irradiation and reflected irradiation from
+clouds and the surrounding environment to generate energy. The panel tilt angle, the
+height of the panel above the ground, the distance between the panels, and the reflectivity
+of the ground have been identified as significant factors influencing energy output. Among
+these factors, the albedo effect, defined as the reflectivity of the ground, emerges as a
+predominant factor in BPV performance. To this aim, four different scenarios are designed
+to evaluate the effects of albedo, tilt angle, panel height and mounting configuration on
+energy generation. A comprehensive analysis is provided for each scenario.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 1. Key parameters influencing BPV panel performance.
+Türkiye is situated between 36◦and 42◦north latitude and 26◦and 45◦east longitude.
+This location puts it within the energy belt of solar energy with significant prospects on the
+Earth. As shown in Figure 2 of the Atlas of Solar Energy Potential of Türkiye [17], there is
+a significant increase in total solar radiation as one moves southward, indicating that the
+southern and southeastern regions have the highest solar energy potential.
+GHI values used in this study were obtained from the Solar Energy Potential Atlas of
+Türkiye (GEPA), which integrates satellite-based data (e.g., Heliosat, Meteosat), ground-
+based meteorological observations (e.g., the Turkish State Meteorological Service, MGM,
+and the Danish Meteorological Institute, DMI), and long-term averaged climate records. In
+the GEPA framework, solar radiation is decomposed into Direct Normal Irradiance (DNI),
+diffuse horizontal irradiance (DHI) and GHI components, providing a physically consistent
+and validated basis for numerical analysis. These data, representative of TMY, inherently
+Energies 2025 ,18, 4443 5 of 19
+reflect both direct and diffuse irradiation contributions, enabling a realistic evaluation of
+BPV performance across varying configurations.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 2. Solar energy potential of Türkiye: yearly distribution of total solar irradiation (kWh/m2-
+year) [17].
+The atlas provides easy access to solar energy information on total solar irradiation
+(kWh/m2-day), direct solar irradiation (kWh/m2-day), and hours of sunshine per province
+and district. Such data are important for determining optimal sites for PV installation and
+the large-scale feasibility of solar projects. Considering Türkiye’s geographical advantages,
+the commercial potential value of well-applied investments in PV systems can help greatly
+to attain the country’s renewable energy targets and sustainability objectives.
+GHI is a weather variable that directly affects the performance of PV panels. The
+magnitude of irradiation that falls on a horizontal surface of the panel directly influences
+the power output of the PV panel. The GHI data used in this study was obtained from the
+GEPA [17].
+The methodology employed in this study is illustrated in Figure 3. As depicted, solar
+energy generation parameters are analyzed based on the selected city and the impact of
+different variables on energy generation is examined. The workflow can be summarized as
+follows: the user initiates the system by entering GHI, PV panel type and albedo values.
+Next, a city is selected from a list of 81 provinces in Türkiye and the corresponding GHI
+value is determined.
+In this study, all GHI values were derived from experimentally measured climate
+datasets obtained from Türkiye’s national solar radiation database. These datasets, which
+represent typical meteorological conditions over extended periods, provide a reliable basis
+for analyzing solar performance at the provincial level. Using these realistic and location-
+specific values, the effects of albedo, panel height, tilt angle, and mounting configuration
+on rear-side energy generation were analyzed numerically. Although simulations were not
+performed on an hourly basis, the use of long-term climate data ensures that the temporal
+variability of solar irradiation is implicitly represented in the results.
+Based on the user’s selection, the system evaluates one of the following four relation-
+ships; (i) power output vs. tilt angle, (ii) power output vs. surface type, (iii) power output
+vs. panel height, (iv) power output vs. panel mounting type. The proposed system provides
+a clear representation of how each parameter affects the energy output of BPV panels.
+Experimental GHI data for a total of 81 cities were collected and entered into the
+program for optimization. To categorize and analyze these data, three separate groups
+were created as shown in below.
+• High GHI ( ≥5.0): This category includes 19 provinces. Provinces like Antalya, Burdur,
+Isparta, ˙Izmir, and Mu˘ gla have the highest GHI values, making them highly suitable
+for solar energy investments.
+Energies 2025 ,18, 4443 6 of 19
+• Medium GHI (4.2 to 4.99): A total of 41 provinces fall under this category. Provinces
+such as Ankara, Konya, Elazi˘ g, and Kayseri exhibit moderate solar energy potential.
+• Low GHI (<4.2): This group contains 21 provinces, including ˙Istanbul, Zonguldak,
+Rize, and Trabzon, which have the lowest GHI values and less potential for solar
+energy utilization.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 3. Flowchart of methodology.
+The provinces with the highest GHI values, measured in kWh/m2-day, exhibit signifi-
+cant solar energy potential. Among the top 10, Antalya, Burdur, and Isparta lead with the
+highest GHI value of 5.40, followed by Aydin, Denizli, ˙Izmir, Manisa, Mu˘ gla, and Usak, all
+with a GHI value of 5.39. These provinces, located mainly in the Mediterranean and Aegean
+regions, benefit from their sunny climates and high solar radiation, making them ideal
+locations for large-scale solar energy investments. Additionally, Adiyaman and Gaziantep
+achieve a GHI value of 5.03, rounding out the list of the top-performing provinces.
+On the other end of the spectrum, the provinces with the lowest GHI values are pre-
+dominantly located in the northern and eastern parts of Turkey, where climatic conditions
+limit solar energy potential. Bartin, Bolu, Düzce, ˙Istanbul, Karabük, Kastamonu, Kocaeli,
+Sakarya, Sinop, and Zonguldak all have a GHI value of 3.80. These provinces, characterized
+by high precipitation and cloud cover, have limited feasibility for solar energy projects
+compared to their southern and western counterparts. However, smaller-scale projects or
+hybrid systems could still be viable solutions in these regions.
+All numerical simulations and data visualizations presented in this study were per-
+formed using the Python programming language. Custom scripts were developed by
+the authors, incorporating standard scientific libraries such as NumPy for numerical
+calculations, Pandas for data handling, and Matplotlib 3.7 for graphical outputs. The
+computational environment ensured flexibility in parameter variation and reproducibility
+of the presented results.
+In order to perform the analysis in the software, a city must be selected. For examining
+a specific parameter, other parameters are kept constant to allow for a comparative analysis
+Energies 2025 ,18, 4443 7 of 19
+of the selected parameter. For this reason, Kahramanmaras is chosen as the city for all
+software analyses. Kahramanmaras stands out with a GHI value of 5.03, placing it among
+the provinces with high solar energy potential. Located in southeastern Türkiye, the
+province enjoys a sunny climate and optimal conditions for efficient PV energy generation.
+Its top ranking shows its suitability for both residential and industrial solar installations.
+With its high solar potential, Kahramanmaras could advance Türkiye’s renewable energy
+goals and promote regional energy sustainability [18].
+Table 1 presents albedo values for different types of surfaces commonly encountered
+where PV systems are installed. Depending on the surface type, albedo values play
+an important role in the performance of BPV systems by affecting the amount of light
+reflected onto the rear surface of the panels. High-albedo surfaces such as aluminum
+(0.85) and fresh snow (0.82) provide the highest reflectivity, significantly increasing back-
+side energy generation. Similarly, high values of wet snow (0.55–0.75) and copper (0.74)
+also contribute significantly to improving energy efficiency. In contrast, moderate-albedo
+surfaces like concrete (0.25–0.35), red tiles (0.33), and new galvanized steel (0.35) offer a
+reasonable level of reflectivity but are less effective than highly reflective materials. These
+surfaces, commonly found in urban and industrial environments, can still enhance BPV
+performance to some extent. On the other hand, low-albedo surfaces such as dry asphalt
+(0.09–0.15), wet asphalt (0.18), and very dirty galvanized materials (0.08) exhibit minimal
+reflectivity, leading to reduced rear-side energy gains. Similarly, urban environments
+(0.14–0.22) and grass-covered areas (0.15–0.26) provide only limited reflection. Given these
+variations, selecting an installation site with high-albedo surfaces or incorporating reflective
+materials, such as white coatings or bright surfaces, can significantly improve the efficiency
+of BPV systems. These surfaces were selected based on their common occurrence in PV
+system environments and their distinct albedo characteristics. The findings from these
+13 surface types provide a comprehensive overview of how surface reflectivity influences
+rear-side energy generation. Also, it can be adopted for additional surface materials such
+as rooftop coatings, gravel, white membranes, and mixed ground types under varying
+climatic conditions to refine and broaden the applicability of the results. Additionally,
+adjusting panel tilt angles and height can further optimize energy yield in environments
+with lower natural reflectivity.
+Table 1. Albedo values of common surface types for PV applications [19].
+Surface Type Albedo Values
+Urban environment 0.14–0.22
+Grass 0.15–0.25
+Fresh grass 0.26
+Fresh snow 0.82
+Wet snow 0.55–0.75
+Dry asphalt 0.09–0.15
+Wet Asphalt 0.18
+Concrete 0.25–0.35
+Red tiles 0.33
+Aluminum 0.85
+Copper 0.74
+New galvanized steel 0.35
+Very dirty galvanized 0.08
+In the study, the BPV panel used is a generic available model based on monocrystalline
+silicon half-cell technology. The panel has a nominal power of 550 Wp, and the bifaciality
+factor is assumed to be 80%. It was selected due to its high power rating, up-to-date
+Energies 2025 ,18, 4443 8 of 19
+manufacturing technology, and proven applicability in recent studies [ 20]. The detailed
+specifications of the panel are presented in Table 2, and its current–voltage (I–V) character-
+istics are illustrated in Figure 4. Only a single panel was used in the simulations, and all
+energy calculations were based on the output of this individual module. This approach
+allowed for a clear analysis of the effects of various installation conditions—such as albedo,
+tilt angle, height, and mounting configuration—on panel performance.
+Table 2. Technical specifications of the BPV panels.
+Properties Values
+Manufacturer Generic
+Model 550 Wp Twin half-cells bifacial
+Nominal power 550 Wp
+Technology Si-mono
+Short-circuit current ( Isc) 14 A
+Open circuit ( Voc) 49.90 V
+Module length 2278 mm
+Module width 1134 mm
+Number cell in series 72 ·2
+Figure 4. Current–voltage characteristics of the selected BPV panel.
+It is acknowledged that the optimal tilt angle for PV panels is not fixed and may vary
+depending on the geographical location, solar path, and seasonal variations in irradiation.
+While a steeper tilt angle may increase rear-side exposure to ground-reflected irradiance, it
+may also reduce front-side production if the panel orientation deviates from the local solar
+optimum. However, the main objective of this study was not to determine the optimal total
+energy yield, but rather to analyze the isolated effect of individual design parameters—
+such as tilt angle—on rear-side performance, assuming all other factors remain constant.
+In practical applications, several other parameters such as shading, soiling, inter-row
+spacing, inverter compatibility, and series connection configuration also influence system
+performance and should be jointly considered in a full optimization framework. These
+factors are noted as limitations of the current study and will be addressed in future research.
+Energies 2025 ,18, 4443 9 of 19
+3. Numerical Analysis and Results
+This section details the results of the study for each scenario designed to evaluate the
+rear-side energy contribution in BPV panels. In Section 3.1, the first scenario investigates
+the impact of surface albedo on rear-side energy generation for different ground materials.
+Section 3.2 presents the second scenario, which analyzes the effect of tilt angle on rear
+irradiance levels. The third scenario is discussed in Section 3.3, focusing on how the
+height of the panel above the ground influences rear-side energy output. Lastly, Section 3.4
+provides a comparative assessment of horizontal and vertical mounting configurations
+as the fourth scenario. In each case, all other variables are held constant to isolate and
+quantify the effect of the parameter under investigation. The energy contribution from the
+back surface of the BPV panels is investigated through simplified mathematical models
+developed under different scenarios. In the initial scenario, the energy generation resulting
+from solar radiation (albedo contribution) that reaches the rear surface of BPV panels is
+determined by utilizing Equation (6).
+Pr=GHI·1000
+24
+·ρ·cosπ·β
+180
+·
+1+h
+1000
+·Pmax
+1000(6)
+In Equation (6), Prrepresents the electrical power (in watts) generated by the back
+surface of the BPV panels. This power is generated when solar radiation reflected from
+the ground (due to albedo) reaches the back surface of the panel and the panel converts
+this radiation into electrical energy. The back-surface energy contribution is determined by
+several factors, including the daily horizontal global irradiance GHI , the surface albedo
+coefficient ρ, the panel tilt angle β, the height h, and the maximum power output Pmaxof
+the panel.
+This equation has been derived in a simplified approach based on the fundamental
+physical principles of various models that have been documented in the literature. The
+parameters in the equation are derived from a variety of sources, including the calculation
+methods proposed by the National Renewable Energy Laboratory (NREL) [ 6], experimental
+and analytical modeling studies published by Sahu et al. [ 21], and optimization-based
+approaches by Sun et al. [ 22]. The effect of tilt on reflected radiation is represented by a
+cosine component, while the effects on the height factor are expressed by a simple multiplier.
+This approach provides a practical engineering simplification that facilitates expeditious
+and precise calculation of the albedo-induced back-surface contribution.
+In scenario two, the power generated by the back surface of the solar panel is calculated
+using Equation (6), with the tilt angle ( β) being the variable of interest [ 6,14,21]. In this
+equation, the ratio of light from the ground reaching the back surface is found by the
+expression ((1 −cosβ)/2). The other variables are A, the panel area, and η, the back-surface
+efficiency of the panel. The effect of height is expressed by the equation (1 + h/1000), where
+hdenotes the height in centimeters. The power contribution of tilt to the back surface was
+calculated by varying the tilt angle between 10◦and 50◦in 5◦increments and applying
+Equation (7) for each angle.
+Pr=GHI·ρ·1−cosβ
+2
+·
+1+h
+1000
+·A·η (7)
+In the third scenario, the power generated by the back surface of the solar panel is cal-
+culated using Equation (7), with the panel height ( h) being the variable of interest [6,14,21] .
+In order to ascertain the relationship between panel height and energy absorption, the tilt
+angle was maintained at 20◦, while the panel height varied from 40 cm to 100 cm. The
+energy falling on the back surface was calculated for each height.
+Energies 2025 ,18, 4443 10 of 19
+In the fourth scenario, Equation (8) [ 6,14,21] is employed to ascertain the variation in
+rear-surface energy production with respect to the installation type. The effect of the mount-
+ing type is expressed by the coefficient fm. The fmcoefficient is applied as ( horizontal = 1.0 ,
+vertical = 0.9).
+Pr=ρ·1−cosβ
+2
+·
+1+h
+1000
+·fm·Pmax (8)
+Additionally, Equation (9) was derived from the model proposed by Yusufoglu
+et al. [ 14] to calculate the reflected radiation reaching the rear surface of bifacial solar
+panels in a more realistic manner. In this model, GHI is divided into direct and diffuse
+components; the DHI is assumed to be uniformly distributed; the View Factor ( Fv), which
+expresses the geometric access of the panel’s rear surface to the light reflected from the
+ground, is also included in the equation to analyze the surface effect. Fvis a dimension-
+less coefficient that defines the extent to which the rear surface of the panel can see the
+solar radiation reflected from the ground, and it is dynamically determined based on the
+panel inclination.
+Er=ρ·DHI·1−cos180◦−β
+2
++α(GHI−DHI )·1−cos(180◦−β)
+2−Fv
+(9)
+3.1. Impact of Surface Albedo on Rear-Side Energy Generation
+The analysis of rear-surface energy generation based on the albedo effect for various
+surface types in Kahramanmaras, considering a panel tilted at 20◦and elevated 100 cm
+above the ground, highlights significant differences in energy yield influenced by the
+underlying surfaces. The aluminum surface demonstrated the highest rear-surface energy
+generation, reaching 21.2%, due to its excellent reflectivity and high-albedo properties.
+Similarly, fresh snow (20.5%) and wet snow (16.2%) surfaces also exhibited outstanding
+performance, reinforcing their high-albedo characteristics. Moderate energy generation
+was observed on surfaces such as red tiles (8.2%), concrete (7.5%), fresh grass (6.5%), and
+grass (5%), which, while reflective, are less efficient compared to snow or metallic surfaces.
+Asphalt surfaces, both dry (3%) and wet (4.5%), recorded significantly lower energy gen-
+eration due to their absorptive nature, which limits light reflection. The lowest energy
+generation was observed on very dirty galvanized surfaces (2%), highlighting the critical
+role of cleanliness in maintaining reflectivity and optimizing energy yield. Copper (18.5%)
+and new galvanized steel (8.7%) surfaces showed substantial energy generation, though
+they lagged behind aluminum, indicating that while metallic surfaces generally perform
+well, material-specific reflectivity matters. These results emphasize the importance of
+selecting high-albedo surfaces, such as aluminum or snow, to maximize energy yield in
+BPV systems, while surfaces with poor reflectivity, such as asphalt or dirty materials, sig-
+nificantly limit performance. This analysis underscores the necessity of site-specific surface
+evaluation for effective BPV system deployment in diverse environmental conditions. The
+program code used for calculating the rear-side energy contribution is based on the albedo.
+The program prompts the user to select a city, and based on the selected city, it
+calculates the rear-side gain values for different surface types. The calculations are based
+on a 550 W BPV panel, with its electrical specifications predefined in the program. The
+panel’s height is fixed at 1 m above the ground and its tilt angle is set at 20 degrees. The
+following results have been obtained under these conditions as shown in Figure 5.
+Figure 5 illustrates the effect of different surface types on the rear-side energy gain of
+bifacial panels. The highest gain was observed on aluminum surfaces (21.2%), followed
+by fresh snow (20.5%) and copper (18.5%), highlighting the significant impact of high-
+reflectivity surfaces on rear-side performance. Surfaces like concrete, red tiles, and new
+galvanized steel provided moderate gains, while low-albedo surfaces such as dry asphalt
+Energies 2025 ,18, 4443 11 of 19
+(3.0%) and dirty galvanized steel (2.0%) offered minimal contribution. Overall, surface
+reflectivity is a key factor influencing the efficiency of BPV systems.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+4.556.520.5
+16.2
+34.57.58.221.2
+18.5
+8.7
+2
+0510152025Rear Surface Gain (%)
+Surface TypeUrban environment
+Grass
+Fresh grass
+Fresh snow
+Wet snow
+Dry asphalt
+Wet Asphalt
+Concrete
+Red tiles
+Aluminum
+Copper
+New galvanized steel
+Very dirty galvanized
+Figure 5. Rear-surface energy gain of based on albedo effect for Kahramanmaras; tilt angle: 20◦;
+height from ground: 100 cm.
+3.2. Effect of Tilt Angle on Rear-Side Energy Contribution
+The second analysis illustrates the rear-surface energy generation of a BPV panel
+based on different tilt angles in Kahramanmaras, with a panel mounted 100 cm above the
+ground in an urban environment. The results clearly show that as the tilt angle increases,
+the rear-surface energy generation significantly improves. At a tilt angle of 10◦, the energy
+generation is the lowest, at 4.3%, due to minimal light reflection onto the rear surface
+caused by the nearly-flat panel orientation. Energy generation gradually increases with tilt
+angle, reaching 4.5% at 20◦and 4.8% at 30◦, indicating enhanced light exposure to the rear
+surface as the tilt angle grows steeper.
+Substantial increases are observed beyond 30◦, with energy generation at 4.9% for
+35◦and 5.1% for 40◦. The sharp rise in energy generation continues, peaking at 5.5% at
+a tilt angle of 50◦, where the panel’s position maximizes light capture and rear-surface
+reflection. These results highlight the critical role of tilt angle determination in improving
+the performance of BPV systems. Low tilt angles reduce energy efficiency due to less light
+reflection, while close-to-vertical angles significantly increase the amount of energy by
+increasing the amount of light reflected to the back surface and hence the contribution
+to power generation. Therefore, tilt angle adjustments should be carefully determined to
+maximize system efficiency under similar environmental conditions. Program code is used
+for rear-side energy contribution according to tilt angle.
+The surface type is fixed as “urban environment,” and the panel height is set 1 m
+above the ground. The rear-side gain values have been calculated based on varying panel
+tilt angles. The results obtained under these conditions are presented as shown in Figure 6.
+Energies 2025 ,18, 4443 12 of 19
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+4.3 4.4 4.5 4.64.8 4.95.15.35.5
+0123456
+10˚ 15˚ 20˚ 25˚ 30˚ 35˚ 40˚ 45˚ 50˚Rear Surface Gain (%)
+Panel Tilt Angle (˚)
+Figure 6. Rear-surface energy gain of a BPV panel based on different tilt angles for Kahramanmaras;
+surface type: urban environment; height from ground: 100 cm.
+Figure 6 shows the effect of panel tilt angle on rear-side energy gain in BPV systems.
+As the tilt angle increases from 10◦to 50◦, the rear-side gain gradually rises from 4.3% to
+5.5%. This trend indicates that steeper tilt angles enhance the panel’s exposure to ground-
+reflected light, improving rear-side performance. Therefore, careful optimization of tilt
+angles is essential for maximizing overall system efficiency.
+3.3. Influence of Panel Height on Rear Irradiation Performance
+The third analysis illustrates the rear-surface energy generation of a BPV panel based
+on its height above the ground in an urban environment in Kahramanmaras, with a tilt
+angle of 20◦. The results show a gradual increase in energy production as the panel’s height
+from the ground increases. At 40 cm above the ground, the energy generation is 4.1%,
+indicating relatively moderate light reflection onto the rear surface due to limited space for
+reflected light to reach the panel.
+As the height increases to 60 cm, energy generation slightly improves to 4.2%, followed
+by further gains at 80 cm with 4.4%. The highest energy production, at 4.5%, is observed
+when the panel is elevated 100 cm above ground. This trend suggests that increasing the
+panel height allows for better light reflection and less obstruction, leading to more light
+reaching the rear surface. However, the differences between the heights are relatively small,
+indicating diminishing returns at higher elevations.
+These results emphasize the importance of optimizing the height of BPV panels. While
+increasing height improves energy generation, the gains beyond a certain elevation are
+marginal, and practical considerations such as installation costs and structural stability
+should also be considered in system design. Program code is utilized to observe the effect
+of panel height. The code has been revised to demonstrate the effect of panel height on rear-
+side gain. The user selects a city, and the program calculates rear-side energy generation
+for varying panel heights (40, 60, 80, and 100 cm) under fixed conditions: a panel tilt angle
+of 20◦and a surface type of sand. Figure 7 shows the rear-surface gain depending on the
+panel height. The gain is at its lowest level at 40 cm above the ground at 4.1%, but gradually
+increases to 4.5% at 100 cm above the ground.
+Although this study evaluates panel height at four discrete levels (40 cm, 60 cm,
+80 cm and 100 cm), which are commonly encountered in field installations, the relationship
+between height and rear-side energy generation exhibits a nonlinear character that warrants
+deeper exploration. The observed trend indicates a gradual increase in energy yield
+with height, yet the relatively small differences between successive values suggest that
+other factors—such as mutual shading, wind-driven cooling effects, and ground surface
+Energies 2025 ,18, 4443 13 of 19
+uniformity—may influence the overall performance. A denser data range and the inclusion
+of more complex site conditions could enhance the resolution of this relationship.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+4.1 4.24.4 4.5
+012345
+40 cm 60 cm 80 cm 100 cmRear Surface Gain (%)
+Panel Height from Ground (cm)
+Figure 7. Rear-surface energy gain of a BPV panel based on based on its height above the ground in
+an urban environment for Kahramanmaras; surface type: urban environment; tilt angle: 20◦.
+This scenario does not aim to maximize total energy output alone but rather to in-
+vestigate panel height as a design parameter that specifically influences rear-side energy
+gain in BPV systems. Rear-side performance is highly sensitive to geometric factors, and
+among these, elevation above ground plays a crucial role in determining the amount of
+reflected irradiance captured. Since an increase in rear-side energy gain leads to a higher
+total energy output from the panel, this scenario was specifically developed to analyze the
+influence of panel height in detail. By isolating the effect of height, this analysis helps to
+identify the point at which increased elevation yields diminishing energy returns. Such
+insight is valuable for informing installation designs that must balance energy yield with
+structural and economic feasibility.
+3.4. Comparison of Horizontal and Vertical Mounting Configurations
+The fourth analysis compares rear-surface energy generation for two mounting types—
+horizontal and vertical—in an urban environment in Kahramanmaras, with the panel
+tilted at 20◦and elevated 100 cm above the ground. The results indicate that horizontal
+mounting provides higher rear-surface energy generation (4.5%) compared to vertical
+mounting (4.1%).
+The superior performance of horizontal mounting can be attributed to its larger surface
+area exposed to reflected light from the ground. This mounting enables light to be received
+by the back surface of the panel, thereby enhancing energy production. Vertical mounting,
+however, has a narrower exposure, limiting reflected light to the back surface and lowering
+energy generation slightly.
+Although the variation is not significant between the two mounting orientations,
+when tested at a large scale, it is seen that horizontal mounting is more effective in back-
+surface energy generation under the same conditions. It suggests the importance of paying
+attention to the orientation of mounting during the design and installation of BPV systems,
+keeping in mind the installation area, to ensure energy efficiency at the highest level.
+The code was utilized in order to contrast horizontal and vertical mounting types with
+steady conditions. In the implementation of the code, the value of albedo for the type of
+surface used was 0.18 (urban environment), the tilt angle of the panel was 20◦, and the
+Energies 2025 ,18, 4443 14 of 19
+panel height from the ground level was 100 cm. The obtained gains are shown in Figure 8.
+Figure 8 compares the impact of mounting type on rear-side energy gain. Horizontal
+mounting provides a slightly higher gain (4.5%) compared to vertical mounting (4.1%).
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 4.5
+4.1
+012345
+Horizontal VerticalRear Surface Gain (%)
+Mounting Type
+Figure 8. Rear-surface energy gain based on mounting type for Kahramanmaras; surface type: urban
+environment; tilt angle: 20◦; height from ground: 100 cm.
+In the horizontal and vertical mounting configuration analysis, the same BPV panel
+was used in both scenarios to ensure a fair and accurate comparison. The horizontal
+configuration was modeled by rotating the panel physically by 90◦, without altering its
+dimensions, such that its longer edge remained parallel to the ground. Conversely, in the
+vertical configuration, the longer edge was oriented perpendicular to the ground.
+In order to isolate the influence of orientation on rear-side energy gain, all other
+parameters such as panel height, tilt angle, surface albedo, and GHI were kept constant
+throughout the analysis. The effect of shading from adjacent panels was intentionally
+excluded, as it depends on many variable site-specific factors such as inter-row spacing,
+tilt variation, ground slope, and terrain profile. Excluding shading allows for a clear
+assessment of how orientation alone affects BPV panel performance.
+This difference in rear-side energy gain is primarily attributed to the greater exposure
+of the horizontally mounted panel’s rear surface to ground-reflected irradiation. In a
+horizontal orientation, the panel spans a wider area parallel to the ground, increasing the
+angular view factor toward the reflective surface beneath. This configuration enhances the
+panel’s ability to receive and utilize reflected radiation, especially in environments with
+moderately reflective surfaces such as concrete or dry soil.
+3.5. Verification of Model Accuracy Using Published Data
+Although direct experimental measurements were not conducted within the scope
+of this study due to limited financial resources, the mathematical model and simulation
+framework developed here were rigorously validated through comparison with existing
+experimental and semi-empirical studies in the literature. The theoretical formulation of
+the model is built upon widely accepted methodologies, including the irradiance modeling
+approaches introduced by NREL [ 6], the experimental and analytical work of Sahu et al. [ 21],
+and optimization-based frameworks proposed by Sun et al. [22].
+Simulation results obtained from this model exhibit strong alignment with the perfor-
+mance trends and value ranges reported in experimentally validated studies such as those
+by Ganesan et al. [ 8,9], Pelaez et al. [ 10], Durusoy et al. [ 11], Alam et al. [ 12], and Wang
+et al. [ 13]. This consistency underscores the credibility and reliability of the model and
+confirms its relevance to real-world BPV system performance analysis. Future work will
+Energies 2025 ,18, 4443 15 of 19
+focus on validating the model through field measurements, further enhancing its accuracy
+and practical applicability.
+In order to verify the accuracy and validity of the model developed in this study, the
+rear-side energy gain rates obtained were compared with experimental and numerical
+findings reported in the literature.
+Ganesan et al. [ 9] investigated the role of the albedo effect on energy gains from the
+rear surface in BPV systems. In the experimental analyses conducted within this scope,
+aluminum surfaces provided an average of 21.4% contribution from the rear surface; ad-
+ditionally, light-colored and highly reflective surfaces, such as white-painted surfaces,
+contributed an average of 18.9%. In the present study, the highest contributions were
+obtained from aluminum (21.2%), fresh snow (20.5%), and copper (18.5%) surfaces, re-
+spectively. These results largely coincide with the field study conducted by Ganesan
+and colleagues.
+A parallel can be drawn between the two studies in terms of surfaces with low albedo.
+For instance, in this study, the contribution of grass surfaces to the rear-surface gain of
+BPV panels was determined to be approximately 5%. Similarly, in the study by Ganesan
+and colleagues, an average of 5% bifacial gain was reported from grass surfaces. In both
+studies, grass was classified among surfaces with low reflectivity, and its contribution was
+observed to be limited.
+The findings obtained in the study conducted by Baloch et al. [ 23] are consistent with
+the results of the present study. White cement, a surface with a high albedo, exhibited
+the greatest bifacial energy gain at 28.5%. In the context of a medium-albedo-value desert
+sand surface, the aforementioned ratio was documented to be 18.59%, while the gain
+obtained on the low-albedo grass surface was found to be constrained to 8.4%. The findings
+suggest a predominant linear relationship between ground reflectivity and the rear-surface
+contribution of BPV systems.
+Furthermore, the present study comparatively analyzed BPV panels installed both
+vertically (east–west oriented) and horizontally (north–south oriented) and presented the
+resulting daily specific energy generation values depending on the installation orientation.
+Consequently, the daily energy generation of panels in the vertical configuration was
+measured at 4.63 kWh/kWp, while that of panels in the horizontal configuration was
+measured at 6.18 kWh/kWp. In this study, the rear-surface gain was determined to be
+4.1% in the vertical configuration and 4.5% in the horizontal configuration. As the bifacial
+gain (rear-surface contribution) was not directly provided in the study by Baloch et al. [ 23],
+it is not possible to clearly distinguish how much of the total generation difference is
+due to rear-surface reflections. Nevertheless, a comparison of the orientations of the
+panels is noteworthy in terms of demonstrating the effect of orientation on energy yield.
+Although the values are not directly comparable, the horizontal configuration showing
+higher performance is a common trend in both studies.
+A comparison of the findings of this study with those of Ghenai et al. [ 24] clearly
+demonstrates the effect of albedo values on the performance of BPV systems. In Ghenai
+et al.’s study [ 24], under conditions of a 25◦panel tilt and a 100 cm mounting height,
+increasing the albedo value from 10% to 90% resulted in a rise in bifacial gain from 2.10%
+to 16.70%. In a similar vein, the present study demonstrated a 21.2% gain through the
+utilization of aluminum, a surface with high reflectivity, at a 20◦tilt and a height of 100 cm.
+Conversely, on a surface with a “very dirty galvanized” condition and a low albedo
+value (albedo: 0.08), the rear-surface gain was measured at 2%. Upon examination of the
+discrepancies in slope and albedo parameters, it can be concluded that the results of the
+two studies are relatively similar.
+Energies 2025 ,18, 4443 16 of 19
+In Ghenai’s study [ 24], the panel tilt parameter was evaluated, and it was determined
+that while albedo was kept constant at 0.1 and panel height at 100 cm, increasing the tilt
+angle from 15◦to 35◦resulted in a rise in bifacial gain from 1.18% to 3.24%. In this study,
+under conditions of similar albedo (0.14–0.22) in an urban environment and once more with
+a panel height of 100 cm, increasing the tilt angle from 10◦to 50◦resulted in an increase in
+rear-surface gain from 5.1% to 5.8%. While both studies demonstrate that increasing the tilt
+has a positive effect on bifacial gain, the increase observed in this study is more limited.
+Furthermore, similar comparisons can be made in terms of panel height parameters.
+In the study by Ghenai et al. [ 24], an increase in panel height from 0.5 m to 1.5 m under a
+25◦panel tilt and 10% albedo value resulted in an enhancement of bifacial gain from 1.73%
+to 2.20%. In this study, however, at a 20◦tilt and 100 cm height, under low-albedo “very
+dirty galvanized” surface conditions, the gain increased from 4.1% to 4.5%. The findings
+suggest that increasing the panel height has a beneficial impact on bifacial performance in
+both studies.
+The rear-side gain values obtained in this study were compared with similar findings
+reported in the literature, and a comparative summary is presented in Table 3.
+Table 3. Technical specifications of the bifacial PV modules.
+Study Scenario DescriptionReported Rear
+Gain (%)This Study’s
+Result (%)Relative
+Difference (%)
+Ganesan et al. [9]Albedo: 0.85 (Aluminum), Tilt: 20◦,
+Height: 100 cm21.4% 21.2% 0.2%
+Ganesan et al. [9]Grass surface (low albedo), Tilt: 20◦,
+Height: 100 cm5.0% 5.0% 0.0%
+Baloch et al. [23]White cement (high albedo),
+Albedo: ~0.7, Tilt: 22◦ 28.5%21.2% (for
+Aluminum)7.3%
+Baloch et al. [23] Grass surface (low albedo), Tilt: 22◦8.4% 5.0% 3.4%
+Ghenai et al. [24]Albedo: 0.10 →0.90, Tilt: 25◦,
+Height: 100 cm2.1%→16.7% 2.0% →21.2% 0.1% →4.5%
+Ghenai et al. [24]Albedo: 0.10, Tilt: 15◦→35◦,
+Height: 100 cm1.18%→3.24% 4.4% →4.9% 3.22% →1.66%
+Ghenai et al. [24]Albedo: 0.10, Tilt: 25◦,
+Height: 0.5 m →1.5 m1.73%→2.20% 4.1% →4.5% 2.4% →2.3%
+4. Conclusions
+This study explores the factors that significantly impact the performance of BPV pan-
+els, with a particular focus on albedo, tilt angle, panel height, and mounting configuration.
+The results reveal that highly reflective materials, such as aluminum and fresh snow, signif-
+icantly increase back-side energy generation, so surface reflectivity is critically important.
+Additionally, the findings indicate that increasing the panel tilt angle enhances energy effi-
+ciency. But, an optimal tilt angle must be determined to balance front- and back-side energy
+generation. The effect of panel height on rear-side energy generation was evaluated within
+the range of 40 cm to 100 cm. The results indicate that rear-side energy generation increases
+as the panel height increases. For instance, the rear-side energy gain was measured as
+4.1%at a height of 40 cm and reached 4.5% at 100 cm. Moreover, horizontal placement
+of panels is better than vertical placement due to the greater surface area presented to
+reflected light. Overall, the study proves that one can significantly enhance the efficiency of
+BPV panels by optimizing such parameters. For obtaining maximum energy output, the
+parameters should be optimized based on the findings of the study taking into account
+the selection of installation location and material. According to this, the present study can
+serve as a reference guide for the design and installation of BPV systems.
+Energies 2025 ,18, 4443 17 of 19
+In contrast to prior studies that often evaluate one or two design factors in isolation,
+this work provides a more comprehensive assessment of the rear-side energy response of
+BPV panels by jointly analyzing the effects of surface albedo, tilt angle, installation height,
+and orientation. The results show not only the anticipated trends but also quantify the
+magnitude of impact under standardized climatic inputs. By employing experimental
+GHI data from a mid-latitude region, the findings offer localized relevance and practical
+insight for deployment strategies. The structured methodology used also allows designers
+to isolate key parameters affecting rear-side yield, which contributes to the optimization of
+BPV systems beyond general theoretical expectations.
+It should be noted that in real-world conditions, the reflectivity of ground surfaces
+may degrade over time due to factors such as dust accumulation, vegetation growth, or
+surface soiling. These effects can significantly reduce rear-side irradiation in BPV panels.
+Although this study was conducted under idealized surface conditions to isolate the albedo
+effect, future work should incorporate dynamic surface changes to more accurately model
+bifacial performance.
+The proposed parametric relationships regarding rear-side energy contribution were
+validated through numerical analysis and simulation-based modeling under various sce-
+narios. The simulations were performed using experimental input parameters such as
+GHI, surface albedo values, and geometrical configurations, providing consistent and
+interpretable results across different conditions.
+5. Future Study
+In future studies, a real-time monitoring system will be developed to further validate
+the simulation results presented in this study. This setup will include sensor-based mea-
+surements of rear-side irradiation and power output under different surface types and
+environmental conditions. By comparing field data with modeled outputs, the accuracy
+of the proposed parametric relationships can be further verified, thereby enhancing the
+practical relevance and applicability of the findings. Also, a machine-learning-powered
+prediction model can provide optimized panel location and tilt angles based on environ-
+mental and meteorological inputs. Furthermore, Python-based simulation models can be
+integrated with geographic information systems to improve site selection for BPV installa-
+tions by providing site-specific energy yield predictions. These analyses will facilitate more
+accurate performance prediction and more knowledgeable pre-installation decision-making
+for large-scale BPV deployments.
+Author Contributions: The two authors have worked together on the study. E.O. was involved in
+the organization of data, research, methodology, software, validation, visualization, and writing.
+F.D. provided conceptualization and supervision. Both F.D. and E.O. authors contributed to the
+final version of the manuscript. F.D. supervised the project. As a result, the article reflects the
+equal contribution of both authors. All authors have read and agreed to the published version of
+the manuscript.
+Funding: This work was supported by a grant from the Kahramanmaras Sutcu ˙Imam University
+Scientific Research Projects Unit, Project Number: 2024/6-5 D.
+Data Availability Statement: Data will be made available on request.
+Conflicts of Interest: The authors declare no conflicts of interest.
+Energies 2025 ,18, 4443 18 of 19
+Abbreviations
+The following abbreviations are used in this manuscript:
+BPV Bifacial Photovoltaic
+GEPA Türkiye Solar Energy Potential Atlas
+GHI Global Horizontal Irradiation
+GIS Geographic Information Systems
+PV Photovoltaic
+STC Standard Test Conditions
+References
+1. Alami, A.H.; Rabaia, M.K.H.; Sayed, E.T.; Ramadan, M.; Abdelkareem, M.A.; Alasad, S.; Olabi, A.-G. Management of potential
+challenges of PV technology proliferation. Sustain. Energy Technol. Assess. 2022 ,51, 101942. [CrossRef]
+2. Dominguez, R.; Carrión, M.; Oggioni, G. Planning and operating a renewable-dominated European power system under
+uncertainty. Appl. Energy 2020 ,258, 113989. [CrossRef]
+3. Chikte, R.; Subramaniam, P .; Baloch, A.A.; Anzil, M.M.; Susantyoko, R.A.; Albadwawi, O.; Qasem, H.; John, J.J. Spatial albedo
+mapping using an autonomous rover for site assessment of bifacial PV power plant. Sol. Energy 2024 ,276, 112644. [CrossRef]
+4. Dinçer, F. Overview of the photovoltaic technology status and perspective in Turkey. Renew. Sustain. Energy Rev. 2011 ,
+15, 3768–3779. [CrossRef]
+5. Dincer, F.; Ozer, E. Assessing the potential of a rooftop grid-connected photovoltaic system for Gaziantep Islamic Science and
+Technology University/Turkey. Jordan J. Electr. Eng. 2023 ,9, 149–165. [CrossRef]
+6. Stein, J.; Reise, C.; Castro, J.B.; Friesen, G.; Maugeri, G.; Urrejola, E.; Ranta, S. Bifacial Photovoltaic Modules and Systems: Experience
+and Results from International Research and Pilot Applications ; Sandia National Lab. (SNL-NM): Albuquerque, NM, USA, 2021.
+[CrossRef]
+7. Lorenzo, E. On the historical origins of bifacial PV modelling. Sol. Energy 2021 ,218, 587–595. [CrossRef]
+8. Ganesan, K.; Winston, D.P .; Sugumar, S.; Prasath, T.H. Performance investigation of n-type PERT bifacial solar photovoltaic
+module installed at different elevations. Renew. Energy 2024 ,227, 120526. [CrossRef]
+9. Ganesan, K.; Winston, D.P .; Sugumar, S.; Jegan, S. Performance analysis of n-type PERT bifacial solar PV module under diverse
+albedo conditions. Sol. Energy 2023 ,252, 81–90. [CrossRef]
+10. Pelaez, S.A.; Deline, C.; MacAlpine, S.M.; Marion, B.; Stein, J.S.; Kostuk, R.K. Comparison of bifacial solar irradiance model
+predictions with field validation. IEEE J. Photovolt. 2018 ,9, 82–88. [CrossRef]
+11. Durusoy, B.; Ozden, T.; Akinoglu, B.G. Solar irradiation on the rear surface of bifacial solar modules: A modeling approach. Sci.
+Rep. 2020 ,10, 13300. [CrossRef] [PubMed]
+12. Alam, M.; Gul, M.S.; Muneer, T. Performance analysis and comparison between bifacial and monofacial solar photovoltaic at
+various ground albedo conditions. Renew. Energy Focus 2023 ,44, 295–316. [CrossRef]
+13. Wang, S.; Wilkie, O.; Lam, J.; Steeman, R.; Zhang, W.; Khoo, K.S.; Siong, S.C.; Rostan, H. Bifacial photovoltaic systems energy
+yield modelling. Energy Procedia 2015 ,77, 428–433. [CrossRef]
+14. Yusufoglu, U.A.; Lee, T.H.; Pletzer, T.M.; Halm, A.; Koduvelikulathu, L.J.; Comparotto, C.; Kopecek, R.; Kurz, H. Simulation of
+energy production by bifacial modules with revision of ground reflection. Energy Procedia 2014 ,55, 389–395. [CrossRef]
+15. Wang, L.; Liu, F.; Yu, S.; Quan, P .; Zhang, Z. The study on micromismatch losses of the bifacial PV modules due to the irradiance
+nonuniformity on its backside surface. IEEE J. Photovolt. 2019 ,10, 135–143. [CrossRef]
+16. Bhang, B.G.; Lee, W.; Kim, G.G.; Choi, J.H.; Park, S.Y.; Ahn, H.-K. Power performance of bifacial c-Si PV modules with different
+shading ratios. IEEE J. Photovolt. 2019 ,9, 1413–1420. [CrossRef]
+17. Solar Energy Potential Atlas (GEPA). Available online: https://gepa.enerji.gov.tr/ (accessed on 5 February 2025).
+18. Dinçer, F.; Özer, E. Design of a hybrid renewable energy system and green hydrogen production for smart cities: A carbon
+emission reduction approach. Int. J. Energy Stud. 2025 ,10, 1125–1158. [CrossRef]
+19. PVsyst Albedo Coefficient. Available online: https://www.pvsyst.com/help-pvsyst7/albedo.htm (accessed on 5 February 2025).
+20. Dincer, F.; Ozer, E. Performance analysis of bifacial photovoltaic panels under different albedo effects: A case study in Abu Dhabi,
+UAE. In Proceedings of the 2024 6th International Conference on Smart Power & Internet Energy Systems (SPIES), Abu Dhabi,
+United Arab Emirates, 4–6 December 2024; pp. 147–150. [CrossRef]
+21. Sahu, P .K.; Roy, J.N.; Chakraborty, C. Performance assessment of a bifacial pv system using a new energy estimation model. Sol.
+Energy 2023 ,262, 111818. [CrossRef]
+22. Sun, X.; Khan, M.R.; Deline, C.; Alam, M.A. Optimization and performance of bifacial solar modules: A global perspective. Appl.
+Energy 2018 ,212, 1601–1610. [CrossRef]
+Energies 2025 ,18, 4443 19 of 19
+23. Baloch, A.A.; Hammat, S.; Figgis, B.; Alharbi, F.H.; Tabet, N. In-field characterization of key performance parameters for bifacial
+photovoltaic installation in a desert climate. Renew. Energy 2020 ,159, 50–63. [CrossRef]
+24. Ghenai, C.; Ahmad, F.F.; Rejeb, O.; Hamid, A.K. Sensitivity analysis of design parameters and power gain correlations of bi-facial
+solar PV system using response surface methodology. Sol. Energy 2021 ,223, 44–53. [CrossRef]
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.

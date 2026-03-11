@@ -45,6 +45,11 @@ function run_bifacial_sweep(configPath, outputPath)
     frontEfficiency = panel.frontEfficiency;
     inverterEfficiency = panel.inverterEfficiency;
     bifaciality = panel.bifaciality;
+    if isfield(panel, 'widthM')
+        panelWidthM = panel.widthM;
+    else
+        panelWidthM = 1.134;
+    end
 
     heightValues = cfg.ranges.heightCm(:)';
     tiltValues = cfg.ranges.tiltDeg(:)';
@@ -60,7 +65,7 @@ function run_bifacial_sweep(configPath, outputPath)
             for a = albedoValues
                 idx = idx + 1;
                 [metrics, hourlySeries] = evaluate_config(ghi, time, h, t, a, ...
-                    areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon);
+                    areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM);
                 results(idx).configuration = struct('heightCm', h, 'tiltDeg', t, 'albedo', a); %#ok<AGROW>
                 results(idx).metrics = metrics; %#ok<AGROW>
                 results(idx).hourlySeries = hourlySeries; %#ok<AGROW>
@@ -101,7 +106,7 @@ function run_bifacial_sweep(configPath, outputPath)
 end
 
 function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg, albedo, ...
-        areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon)
+        areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM)
     totalEnergyKWh = 0;
     peakPowerKW = 0;
     totalFront = 0;
@@ -138,7 +143,7 @@ function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg,
         end
 
         [effVal, frontVal, rearVal] = calculate_irradiance( ...
-            ghiVal, tiltDeg, heightCm, albedo, bifaciality, lat, lon, hourUTC, doy);
+            ghiVal, tiltDeg, heightCm, albedo, bifaciality, lat, lon, hourUTC, doy, panelWidthM);
 
         powerKW = (effVal / 1000) * areaM2 * frontEfficiency * inverterEfficiency;
 

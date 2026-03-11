@@ -1,0 +1,264 @@
+ Energy Procedia   55  ( 2014 )  389 – 395 Available online at www.sciencedirect.com
+ScienceDirect
+1876-6102 © 2014 The Authors. Published by Elsevier Ltd. This is an open access article under the CC BY-NC-ND license 
+(http://creativecommons.org/licenses/by-nc-nd/3.0/).
+Peer-review under responsibility of the scientific committee of the SiliconPV 2014 conferencedoi: 10.1016/j.egypro.2014.08.111 4th International Conference on Silicon Photovoltaics, SiliconPV 2014 
+Simulation of energy production by bifacial modules with revision 
+of ground reflection 
+Ufuk Alper Yusufoglua,*, Tae Hun Leea, Tobias Markus Pletzera, Andreas Halmb, Lejo 
+Joseph Koduvelikulathub, Corrado Comparottob, Radovan Kopecekb, Heinrich Kurza 
+aRWTH Aachen University, Institute of Semiconductor Electronics, Sommerfeldstraße 24, D-52074, Aachen, Germany 
+bInternational Solar Energy Research Center Konstanz e.V., Rudolf-Diesel-Str. 15, D-78467, Konstanz, Germany  
+Abstract 
+Bifacial solar modules are becoming increasingly more attractive stimulated by the development of new solar cell structures 
+enabling to capture solar insolation on both front and rear surfaces. The possibilities to be installed in the conventional sou th 
+facing orientation or even vertically are further advantages. Although the potential of bifacial modules have been already show n 
+in specific time intervals and for various ground albedos there is a lack in simulation studies up to now. In this study, we simulated the annual energy yield (AEY) of south facing bifacial modules using a rigorous calculation method of the gro und 
+reflected radiation reaching the rear module surface. The necessary tilt angle optimization is done incorporating the influence  of 
+module elevation and considering the inherent albedo coefficient. These simulations are able to reproduce measurement observations and show that at optimum tilt angles produced annual energy can be increased by 30% compared to a standard module simply by positioning modules two meters above ground instead of a close to ground installation. Furthermore, a linear 
+relationship between albedo coefficient and AEY is demonstrated. 
+ 
+© 2014 The Authors. Published by Elsevier Ltd. 
+Peer-review under responsibility of the scientific committee of the SiliconPV 2014 conference. 
+Keywords:  Bifacial module; simulation; annual energy yield; albedo; view factor 
+ 
+ 
+* Corresponding author. Tel.: +492418027892; fax: +492418022246. 
+E-mail address:  yusufoglu@iht.rwth-aachen.de 
+© 2014 The Authors. Published by Elsevier Ltd. This is an open access article under the CC BY-NC-ND license 
+(http://creativecommons.org/licenses/by-nc-nd/3.0/).
+Peer-review under responsibility of the scientific committee of the SiliconPV 2014 conference
+390   Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 
+1. Introduction 
+B
+ifacial modules bear a huge potential in competing with or even in substituting the standard monofacial modules 
+because of their ability to capture sunlight not only from front but also through the rear side. Current measurements 
+and analysis studies [1-4] are limited to analyses done for specific locations and albedos, bounded time intervals and module mountings. Hence, unlike for standard (monofacial) modules there is a need for more comprehensive studies addressing the whole set of relevant parameters affecting the bifacial performance. Therefore, using our simulation tool we aim in this study to analyze the potential and performance of south-facing bifacial modules considering the combined influences of climate, ground reflection, module elevation and tilt angle. 
+2. Modelling steps for the annual energy yield 
+2.1. Modelling of irradiance at the plane of the module (POM) surfaces 
+T
+he irradiance data needed were acquired from GeoModel Solar – SolarGIS incorporating global horizontal 
+(GHI), dif
+fuse horizontal (DHI) and direct beam irradiances within a 15 minute resolution. Utilizing the information 
+about the sun’s position the direct component of the irradiance was computed geometricall y for both front and rear 
+surfaces with respect to the individual angles of incidence. The diffuse irradiance component at tilted POM was 
+calculated applying the Perez model [5] again for both surfaces. To account for the albedo contribution for the front surface the well-known equation is used [6]: 
+,,1c o s
+2POM Albedo frontE GHI/g69/g68/g16/g32    (1) 
+, where α denotes the albedo coefficient of the ground and β is the tilt angle of the module.  
+A
+lthough the albedo part is of minor importance for standard modules it is of vital significance for the bifacial 
+modules and therefore needs to be modelled accurately. Using Eq. 1 for the rear surface would overestimate the albedo component since the attenuation of the radiation due the resultant shadow of the module on the ground is not incorporated. 
+Therefore, we demonstrate an approach accounting for this effect based on the principle of the view factor known 
+form the heat transfer fundamentals [7]. View factor F
+1→2 (see Fig. 1) denotes the fraction of the radiation received 
+by surface 2 emitted from surface 1. The product of this view factor and the module area (denoted as VF) will 
+provide the ratio of the irradiance reaching the solar module to the available irradiance on the ground. The factor   (1-cosβ)/2 in Eq. 1 is also based on this principle. Assuming that the ground reflected radiation is totally diffuse and 
+sh 
+adowing is caused only by the direct irradiance the principle of view factor can be applied for the calculation of 
+ground reflected irradiance at the module rear side. 
+ 
+  
+ 
+Fig. 1. (a) Definition of view factor and; (b) its implementation for the ground reflected radiation. 
+
+ Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 391
+The GHI is decomposed into diffuse and direct part, whereby the former will remain unchanged except 
+substituting β with 180°-β to account for the tilt angle regarding the rear surface. The direct portion of the ground 
+reflected radiation (GHI-DHI) will be emitted only from the area outside the shadow whereas the diffuse part of the 
+irradiance will be emitted from the whole underlying surface. Hence Eq.1 needs to be separated into two parts to 
+attribute for this constraint: 
+/g11/g12/g11/g12/g11/g12
+,,1 cos 180 1 cos 180
+22POM Albedo rear V E DHI GHI DHI F/g69/g69
+/g68/g68/g167/g183 /g16/g16 /g16/g16/g168/g184 /g32/g14 /g16 /g16/g168/g184/g169/g185
+/g12
+/g69
+/g12
+/g12
+ /g167/g183
+ /g11
+ /g12
+/g69
+ /g11
+ 1 cos 180
+ /g11
+ (2) 
+/g11/g12,,1c o s 1c o s
+22POM Albedo rear V E DHI GHI DHI F/g69/g69/g68/g68/g14/g14 /g167/g183/g32/g14 /g16 /g16 /g168/g184/g169/g185  (3) 
+, which will be used for the AEY simulations explained in the next section. The necessary geometric entities 
+shown in Fig. 1 are calculated based on the sun’s position.  S denotes the distance between the centers of the module 
+and the shadow, whereas θ1 and θ 2 denote the angles between the normal of shadow (ground) and module, 
+respectively.  
+Furthermore, the angle-of-incidence dependent transmission of the irradiance from both surfaces of the module to 
+the cells’ surface is incorporated as described in [8]. The direct irradiance reaching the cells is determined by scaling 
+down the direct light at the plane of the module with this angle-of-incidence dependent transmission. For the attenuation of diffuse and ground reflected irradiance through glass and encapsulant the average value of the 
+angle-of-incidence dependent transmission is used. Lastly, it must be noted that all the simulations in this study were 
+done considering a single module and assuming a uniform albedo coefficient across the whole underlying ground 
+surface. 
+2.2. Electrical and thermal modelling of the bifacial module 
+The AEY simulations are based on the measured I-V data of six-inch n-type crystalline bifacial cells fabricated at 
+ISC Konstanz. Details about the fabrication process can be found in [9]. The I-V curves of the cells were separately 
+measured for front and rear sides using a black chuck. The measured data are used to fit them to the two diode 
+model. To account for the photo current of the rear side a parallel current source is added to the one belonging to the 
+photo current of the front. Thus, the total photo current is the addition of both scaled with the corresponding irradiance reaching the front and rear. The shunt resistance was extracted from the dark I-V curves. The bifaciality of 
+the used cells ( η
+rear/ηfront) is on average about 80 %.  
+The temperature of the cells were calculated using the nominal operating cell temperature (NOCT) formula 
+choosing a T NOCT = 45°C for standard and two degrees more for bifacial modules [10]. 
+3. Simulation approach and results 
+Using the mentioned modelling structure, AEY of a south-facing bifacial module containing 60 cells is simulated 
+at two different locations, Oslo/Norway and Cairo/Egypt using a time step of 15 minutes. After finding the installation dependent optimum tilt angles, the influences of installation height, albedo coefficient and climate on the AEY of bifacial modules are analyzed. To emphasize the advantages of bifacial modules each simulation scenario was carried out for standard modules as well and both were compared based on the annual energy.  
+3.1. Determining the optimum tilt angles 
+There is a significant difference in determining the optimum tilt angles of standard and bifacial modules. For 
+standard modules the tilt angle is optimized based on maximizing the utilization of direct and diffuse irradiance. The 
+392   Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 
+albedo part does not have a significant influence. For bifacial modules, however, the optimum tilt angle depends on 
+a larger set of parameters requiring the albedo coefficient and installation height of the module to be taken into account. Fig. 2 depicts the optimum tilt angles of standard and bifacial modules in Oslo and Cairo under varying albedo coefficients.  In this first analysis, the lower edge of the bifacial module was set at 2 meters above ground to minimize the attenuation effect of shadow on the ground and hence to attribute the influence of albedo coefficient to the optimum tilt angle.  
+  
+ 
+Fig. 2. (a) Optimum tilt angles of standard and bifacial modules in (i) Oslo and (ii) Cairo and their dependence on the albedo coefficient.       
+Bifacial modules were simulated using an elevation height of 2 m. 
+It is observed that the optimum tilt angle of bifacial modules is slightly larger (3° in Cairo and 5° in Oslo) than 
+those of standard modules provided an albedo coefficient of 0.2. The increase in AEY through the use of bifacial module can be seen as well which will be discussed in more detail in the next section. Here it is important to note that the annual energy yield was calculated using the yearly energy produced by the modules divided by the power at the standard testing conditions (STC) under front illumination only. As can be seen in Fig. 2 for standard modules tilted ± 5° away from their optimum the change in the annual energy yield is small. However, with increased tilt angles the distance between shadow and the module is increased. Thus, the ground reflected irradiance reaching the rear side of module is attenuated less. Since the absolute gain in irradiance at the rear side is larger than the decrease at the front larger tilt angles are favorable at this albedo coefficient. However, at a larger albedo coefficient of 0.5 
+the difference in optimum tilt angle for standard and bifacial modules vanishes. Additionally, the optimum tilt angle 
+of standard module is increased as well. Since the ground reflection grows to a significantly larger extent standard modules can make increased use of this ground reflected irradiance through larger tilt angles. Thereby, the gain in utilizing the ground reflected irradiance is larger than the loss in utilizing the sky irradiance. Furthermore, due to the increased irradiance at this albedo coefficient reaching the front and hence reducing the relative contribution of the rear side to the overall energy production the optimized tilt angles are dominated by the front performance.  
+In the second analysis, the combined effect of installation height and albedo coefficient is analyzed. The optimum 
+tilt angles of bifacial modules dependent on these factors are shown listed in Table 1.  
+     Table 1. Optimum tilt angle of bifacial modules dependent on installation height and albedo coefficient. 
+Module 
+elevation [m]   Cairo 
+α = 0.2   
+α = 0.35   
+α = 0.5    Oslo 
+α = 0.2   
+α = 0.35   
+α = 0.5  
+0   35 39 42   55  56 58 
+0.5   32 33 34   54  55 57 
+2   31 32 32   54  55 56 13971402
+1208121310881093
+44 46 48 50 52 54 56 58 60 6210451050i) Oslo
+a) /g68 = 0.5 
+    Bif
+acial
+b) /g68 = 0.5 
+    St
+andard
+c) /g68 = 0.2 
+    Bif
+acial
+d) /g68 = 0.2 
+    St
+andardAnnual energy yield [kWh/kWp]
+Tilt angle [°]23232331
+1988199617771785
+22 24 26 28 30 32 34 36 38 4017461756ii) Cairo
+a) /g68 = 0.5 
+    Bif
+acial
+b) /g68 = 0.5 
+    St
+andard
+c) /g68 = 0.2 
+    Bif
+acial
+d) /g68 = 0.2 
+    St
+andard
+Tilt angle [°]
+ Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 393
+ 
+The optimum tilt angle increases with increasing albedo coefficient for all module elevations. In addition, 
+optim
+um tilt angles also increase as modules are mounted closer to ground. At low module elevations the distance 
+between shadows and the modules are shorter. This drawback can be reduced by increasing tilt angles thus forcing 
+shadows fall at larger distances away from modules. Due to higher angles of incidences and abundance of direct irradiance the differences in optimum tilt angles at varying module elevations are larger in Cairo than in Oslo. If this module elevation dependent optimum tilt angle was not taken into account, a bifacial module in Cairo mounted on the ground (α=0.5) with a tilt angle of 32° instead of the optimum 42° would yield to 1.4% loss in annual energy. 
+Oslo, h
+owever, suffers less from non-optimal installations owing to frequent diffuse light and oblique angles of 
+incidences.  
+3.2. Influence analysis of albedo coefficient and installation height for bifacial modules in different climates 
+Measu
+rement results reported in [1,2] show that bifacial modules in upper rack positions produced more power 
+compared to bifacial modules in lower rack positions and additionally a near logarithmic dependence of power on 
+the module elevation was demonstrated [1]. This experimental finding is reproduced through simulations carried out using the conditions shown in Table 1 (see Fig 3a).  
+ 
+ 
+Fig. 3. (a) AEY of the bifacial module at optimum tilt angle in (i) Cairo and (ii) Oslo and its dependence on the albedo coeffi cient of the ground 
+and module elevation; (b) Dependence of AEY on the albedo coefficient shown for the instance of Cairo. 
+Since sunlight strikes Oslo at more oblique angles and the diffuse radiation is more frequent than the direct one 
+the effect of module elevation on AEY is relatively smaller and wears off more rapidly compared to Cairo, which is subject to the opposite conditions. The distance of the shadow to the module is in Cairo generally shorter compared to Oslo and hence attenuates the ground reflected radiation accordingly in a larger extent. Moreover, due to its lower latitude modules in Cairo have a smaller optimum tilt angle compared to those in Oslo. This is another fact causing a shorter distance between module rear side and the shadow and hence limits utilization of ground reflection. This reduction can be gradually overcome by increasing the module elevation, which can be observed in Fig. 3a. 
+Furthermore, plotting AEY versus the albedo coefficient (Fig. 3b) results in a linear relationship for all module 
+elevation heights. For the sake of simplicity only the case for Cairo is shown but the trend is similar for Oslo. The 
+largest slope is obtained for the highest module elevation. Since higher installations diminish the shadow area the 
+benefit of a more reflective ground can be utilized in a larger extent. 
+The final investigation compares bifacial module with the standard one. For this purpose both module types are 
+simulated at their corresponding optimum tilt angles. The annual energy produced by the standard module is taken 190020002100220023002400
+0,0 0,5 1,0 1,5 2,0121012141304130813981404i) Cairo
+Albedo coefficient    0.5     0.35     0.2a)
+ii) OsloAnnual energy yield [kWh/kWp]
+Lower module edge from ground [m]0,20 0,35 0,50190020002100220023002400Annual energy yield [kWh/kWp]
+Albedo coefficientDistance of lower
+module edge from ground
+ 2 m
+ 0.5 m
+ 0 m@ Cairob)
+394   Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 
+as reference. The gain in annual energy is obtained using the ratio of the annual energy produced by the bifacial 
+module to the standard one and is presented in Table 2.  
+It can be seen that provided a highly reflective ground bifacial modules can help to increase annual energy 
+production up to 30%. Even at more common α of 0.2 the gains reach 15%. Due to the above mentioned reasons the 
+inf
+luence of module elevation is more profound for Cairo. Thanks to frequent diffuse radiation Oslo benefits at low 
+α more from bifacial design compared to Cairo since shadowing does not come up as a dominant loss factor. On the 
+o
+ther hand, enhancing the utilization of ground reflection through higher elevations similar or even more gains can 
+be achieved also in Cairo.  
+     Table 2. Annual energy gain (%) using bifacial module and its dependence on site, module elevation and albedo.                        
+Annual energy produced by the standard module is taken as reference. 
+Module 
+elevation [m]  Cairo 
+α = 0.2   
+α = 0.5     Oslo 
+α = 0.2   
+α = 0.5  
+0  10.6 % 24.3 %    15.4 % 28.1 % 
+0.5  12.9 % 28.8 %    15.5 % 28.3 % 
+2  13.8 % 30.6 %    15.5 % 28.3 % 
+ 
+4. Conclusion 
+T
+he determination of the optimum tilt angles of bifacial modules requires a more complex treatment than those of 
+standard modules since additional parameters such as mounting conditions and albedo have a direct influence. It is shown that in locations with more diffuse irradiances the performance of bifacial modules is less prone to 
+installation variations. In Cairo, however, which is subject to frequent direct light, the difference in optimum tilt 
+angle can be as much as 10 degrees for different installation heights. We showed an increasing trend in optimum tilt angle for lower installations and higher albedo coefficients. Secondly, it is demonstrated that higher installations from ground are favorable for all locations with improved advantages for locations with more direct light. Furthermore, there is a linear relation between the annual energy yield and the albedo coefficient. Provided a highly reflective ground ( α=0.5) bifacial modules are able to generate up to 30% more energy than standard modules. 
+B
+ifacial modules have also a great potential for locations dominated by low-light conditions being able to produce 
+15% more energy than standard modules even at a common surface albedo coefficient of 0.2.   
+ 
+Acknowledgements 
+T
+his work is part of the project “Kompetenzzentrum für innovative Photovoltaik -Modultechnik NRW” and has 
+been funded by the European Union and the German Federal State of North Rhine-Westphalia. 
+ 
+References 
+[1] Kreinin L, Bordin N, Karsenty A, Drori A, Grobgeld D, Eisenberg Y. PV module power gain due to bifacial design. Preliminary  experimental 
+and simulation data. Proceedings of the 35th IEEE Photovoltaic Specialists Conference, Honolulu, Hawaii, USA, 2010; 2171-2175.  
+[2] Lossen J, Böscke T, Krokoszinski HJ. Increased energy yield for Bosch’s n -type solar cells in bifacial application. Proceedings of the 1st bifi 
+PV Workshop, Konstanz, Germany, 2012. 
+[3] Luque A, Lorenzo E, Lopez-Romero S, Sala G. Diffusing reflectors for bifacial phot ovoltaic panels. Solar Cells 1985; 13(3) ; 277-292. 
+[4] Krenzinger A, Lorenzo E. Estimation of radiation incident on bifacial albedo-collecting panels. International Journal of So lar Energy 1986; 
+4(5); 297-319. 
+[5] Perez R, Ineichen P, Seals R, Michalsky J, Stewart R. Modeling daylight availability and irradiance components from direct and global 
+irradiance. Solar Energy 1990; 44(5) ; 271-289.  
+[6] Ineichen P, Oliver G, Perez R. Ground-reflected radiation and albedo. Solar Energy 1990; 44(4) ; 207-214. 
+[7] Cengel YA. Heat Transfer: A Practical Approach. New York: McGraw-Hill; 2003. 
+ Ufuk Alper Yusufoglu et al.  /  Energy Procedia   55  ( 2014 )  389 – 395 395
+[8] Yusufoglu UA. Pletzer TM, Min B, van Mölken J, Litzenburger B, Pingel S, Herrmann W, Kurz H. A simulation study on the annu al energy 
+yield gain of solar modules by reduction of mismatch losses through sorting of solar cells. Proceedings of the 28th EU PVSEC, P aris, France, 
+2013; 3203-3206.  
+[9] Mihailetchi VD, Halm A, Edler A, Galbiati G, Koduvelikulathu LJ, Roescu R, Comparotto C, Kopecek R, Peter K. Bifacial n-typ e crystalline 
+silicon solar cells. Proceedings of the 1st bifi PV Workshop, Konstanz, Germany, 2012. 
+[10]Ross RG. Flat-plate photovoltaic array design optimization. Proceedings of the 14th IEEE Photovoltaic Specialists Conferenc e. 1980;1126-
+1132. 
+ 

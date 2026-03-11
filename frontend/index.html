@@ -128,19 +128,24 @@
     <section class="card">
       <div class="card-header"><h2>📐 Model Formulas</h2></div>
       <div class="formula-list">
-        <p><strong>Front irradiance</strong> (equator‑facing, BTP‑1):</p>
-        <pre>beam_tilted = DNI × max(0, cos I)
-sky_vf = (1 + cos β)/2
-gnd_vf = (1 − cos β)/2
+        <p><strong>Front irradiance</strong> (equator‑facing, Liu‑Jordan isotropic):</p>
+        <pre>beam_tilted = DNI × max(0, cos I)
+sky_vf = (1 + cos β)/2
+gnd_vf = (1 − cos β)/2
 ghi_diffuse = GHI × kd
 front = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf</pre>
-        <p><strong>Rear irradiance</strong> (ground reflection + diffuse, BTP‑1):</p>
-        <pre>rear_vf = (1 − cos β)/2
-height_factor = min(1 + h/1000, 2.2)   % h in cm; cap ≈2.2
-rear_ground = GHI × albedo × rear_vf × height_factor
-rear_diffuse = GHI_diffuse × 0.1
-rear = (rear_ground + rear_diffuse) × bifaciality</pre>
-        <p><strong>Total effective</strong> = front + rear (≥0) — equations taken verbatim from the BTP‑1 research paper. No additional geometry or diffusion formulas are shown.</p>
+        <p><strong>Rear irradiance</strong> (BTP‑2, Yusufoglu et al. 2014, Eq. 9):</p>
+        <pre>rear_vf = (1 + cos β)/2
+E_rear = α×DHI×rear_vf + α×(GHI−DHI)×(rear_vf − F_V)
+rear_effective = E_rear × bifaciality</pre>
+        <p><strong>Shadow View Factor (F<sub>V</sub>)</strong>:</p>
+        <pre>γ_profile = atan(tan(sun_elev) / cos(sun_az − panel_az))
+shadow_lower = h / tan(γ_profile)
+shadow_upper = (h + W·sin β) / tan(γ_profile)
+F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
+        <p>F<sub>V</sub> accounts for the module's own shadow blocking direct ground reflection.
+           Solar azimuth is computed analytically from site coordinates.</p>
+        <p><strong>Total effective</strong> = front + rear (≥0). No temperature correction applied.</p>
       </div>
     </section>
 

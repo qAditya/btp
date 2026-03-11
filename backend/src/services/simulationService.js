@@ -12,6 +12,7 @@ const RANGE_LIMITS = {
 
 const DEFAULT_PANEL_CONFIG = {
   areaM2: 2.2,
+  widthM: 1.134,
   frontEfficiency: 0.21,
   inverterEfficiency: 0.96,
   bifaciality: 0.7
@@ -110,6 +111,107 @@ function diffuseFraction(kt) {
   return 0.165;
 }
 
+
+
+// ─── Solar azimuth (BTP‑2: needed for shadow projection) ─────────────────
+
+function solarAzimuth(latRad, decRad, haRad, cosZ) {
+  // Returns solar azimuth in radians, measured clockwise from north.
+  // South = π (≈180°), East ≈ 90°–135°, West ≈ 225°–270°.
+  const sinZ = Math.sqrt(Math.max(0, 1 - cosZ * cosZ));
+  if (sinZ < 1e-6) return Math.PI; // sun at zenith → default south
+
+  // Standard solar azimuth from NORTH:
+  //   cos(Az) = (sin(δ) − sin(h)·sin(φ)) / (cos(h)·cos(φ))
+  // where h = elevation (sin(h) = cosZ), cos(h) = sinZ
+  const cosAz = (Math.sin(decRad) - cosZ * Math.sin(latRad)) / (sinZ * Math.cos(latRad));
+  const sinAz = -Math.cos(decRad) * Math.sin(haRad) / sinZ;
+  let az = Math.atan2(sinAz, cosAz); // range -π..π, 0 = north
+  if (az < 0) az += 2 * Math.PI;     // normalize to 0..2π
+  return az;
+}
+
+// ─── Shadow View Factor F_V (BTP‑2, Yusufoglu et al. 2014) ──────────────
+//
+// Computes the view factor from the module's rear surface to the shadow
+// that the module itself casts on the ground.  The shadow attenuates
+// the *direct* component of ground-reflected radiation only.
+//
+// Uses 2D cross-section geometry + Simpson's rule numerical integration.
+
+const SIMPSON_POINTS = 200; // must be even
+
+function calculateShadowViewFactor(betaRad, heightM, widthM, sunElevationRad, sunAzimuthRad, panelAzimuthRad) {
+  // ── Solar profile angle: sun elevation projected onto the panel's
+  //    cross-sectional (meridian) plane.
+  const azDiff = sunAzimuthRad - panelAzimuthRad;
+  const cosAzDiff = Math.cos(azDiff);
+  if (sunElevationRad <= 0.001 || cosAzDiff <= 0.001) return 0;
+
+  const profileAngle = Math.atan(Math.tan(sunElevationRad) / cosAzDiff);
+  if (profileAngle <= 0.001) return 0;
+
+  const tanProfile = Math.tan(profileAngle);
+  if (tanProfile <= 0.001) return 0;
+
+  // ── 2D coordinate system (cross-section perpendicular to panel length):
+  //    x-axis = horizontal, positive toward the REAR side (north for south-facing)
+  //    y-axis = vertical, positive upward
+  //
+  //    Panel lower edge at (0, h)
+  //    Panel upper edge at (W·cosβ, h + W·sinβ)  ← goes toward rear and up
+  //    Shadow falls in the +x direction (behind the panel)
+
+  // ── Shadow edges on the ground (horizontal distance in +x from panel base)
+  const shadowLower = heightM / tanProfile;
+  const shadowUpper = widthM * Math.cos(betaRad) + (heightM + widthM * Math.sin(betaRad)) / tanProfile;
+  if (shadowUpper <= shadowLower + 1e-6) return 0;
+
+  // ── Module rear-surface centroid
+  const midX = (widthM * Math.cos(betaRad)) / 2;
+  const midY = heightM + (widthM * Math.sin(betaRad)) / 2;
+
+  // Rear-surface outward normal direction:
+  // Panel tangent from lower to upper = (cosβ, sinβ)
+  // Front normal (faces sun/south) = (-sinβ, cosβ)
+  // Rear normal (faces ground/north) = (sinβ, -cosβ)
+  const rearNormalX = Math.sin(betaRad);
+  const rearNormalY = -Math.cos(betaRad);
+
+  // ── Simpson's rule integration of F_shadow over [shadowLower, shadowUpper]
+  const n = SIMPSON_POINTS;
+  const dx = (shadowUpper - shadowLower) / n;
+
+  function integrand(x) {
+    // Vector from module centroid to ground point (x, 0)
+    const vx = x - midX;
+    const vy = -midY;
+    const r = Math.sqrt(vx * vx + vy * vy);
+    if (r < 1e-9) return 0;
+
+    // cos θ₁: angle between rear normal and line to ground point
+    const cosTheta1 = (rearNormalX * vx + rearNormalY * vy) / r;
+    // cos θ₂: angle between ground normal (0,1) and line from ground to module
+    //          = (0·(-vx) + 1·(-vy)) / r = midY / r
+    const cosTheta2 = midY / r;
+
+    if (cosTheta1 <= 0 || cosTheta2 <= 0) return 0;
+    return (cosTheta1 * cosTheta2) / (2 * r);
+  }
+
+  let sum = integrand(shadowLower) + integrand(shadowUpper);
+  for (let i = 1; i < n; i++) {
+    const x = shadowLower + i * dx;
+    sum += integrand(x) * (i % 2 === 0 ? 2 : 4);
+  }
+  const fShadow = (dx / 3) * sum;
+
+  // ── F_V = view factor from rear surface to the shadow strip.
+  //    When F_V is large → shadow blocks more direct reflection → less rear irradiance.
+  //    Clamp to valid range [0, (1+cosβ)/2].
+  const fTotal = (1 + Math.cos(betaRad)) / 2;
+  return clamp(fShadow, 0, fTotal);
+}
 
 
 // ──────────────────────────────────────────────────────────────────
@@ -254,6 +356,15 @@ function normalizePanelConfig(panelConfig) {
         DEFAULT_PANEL_CONFIG.bifaciality,
         { min: 0.3, max: 1 },
         "panelConfig.bifaciality"
+      ),
+      4
+    ),
+    widthM: roundTo(
+      normalizeNumericField(
+        input.widthM,
+        DEFAULT_PANEL_CONFIG.widthM,
+        { min: 0.3, max: 3 },
+        "panelConfig.widthM"
       ),
       4
     ),
@@ -409,13 +520,14 @@ function normalizeRanges(rangesInput) {
 // supply the variables (DNI, cos I, kd) required by these equations.
 function calculateEffectiveIrradiance({
   ghiWm2, tiltDeg, heightCm, albedo, bifaciality,
-  latitude, longitude, timeIso
+  latitude, longitude, timeIso, panelWidthM
 }) {
   if (ghiWm2 <= 0) {
     return { frontEffectiveWm2: 0, rearEffectiveWm2: 0, totalEffectiveWm2: 0, tempDerate: 1 };
   }
 
   const betaRad = degToRad(tiltDeg);
+  const latRad = degToRad(latitude);
 
   // ── Solar position ──
   const d = new Date(timeIso);
@@ -431,6 +543,14 @@ function calculateEffectiveIrradiance({
     // Sun below horizon
     return { frontEffectiveWm2: 0, rearEffectiveWm2: 0, totalEffectiveWm2: 0, tempDerate: 1 };
   }
+
+  // ── Solar elevation & azimuth ──
+  const sunElevationRad = Math.asin(clamp(cosZ, 0, 1));
+  const decRad = degToRad(dec);
+  const haRad = degToRad(ha);
+  const sunAzimuthRad = solarAzimuth(latRad, decRad, haRad, cosZ);
+  // Panel azimuth: equator-facing (south in N-hemisphere, north in S-hemisphere)
+  const panelAzimuthRad = latitude >= 0 ? Math.PI : 0; // π = south, 0 = north
 
   // ── Erbs decomposition: GHI → beam + diffuse (BTP‑1 eqn 1) ──
   const G0h = extraterrestrialHorizontal(doy, cosZ);
@@ -448,26 +568,27 @@ function calculateEffectiveIrradiance({
   const diffuseTilted = ghiDiffuse * skyVF;
   const groundReflFront = ghiWm2 * albedo * gndVF;
   const frontBase = Math.max(0, beamTilted + diffuseTilted + groundReflFront);
-
-  // front side is assumed equator-facing; no azimuth correction applied
   const frontEffectiveWm2 = frontBase;
 
-  // ── Rear irradiance: ground-reflected + diffuse (BTP‑1 eqns 7–8 + rear-diffuse term) ──
-  // Rear view factor per BTP‑1: (1 - cos β)/2
-  const rearGndVF = (1 - Math.cos(betaRad)) / 2;
-  // Height factor per BTP‑1: (1 + h/1000) where h is height in cm,
-  // with a saturation cap at 2.2 to prevent unbounded growth.
-  const HEIGHT_FACTOR_CAP = 2.2;
-  const heightFactor = Math.min(1 + heightCm / 1000, HEIGHT_FACTOR_CAP);
-  // Ground-reflected component
-  const rearGround = ghiWm2 * albedo * rearGndVF * heightFactor;
-  // Rear diffuse component: fraction of diffuse sky reaching rear directly
-  const REAR_DIFFUSE_FRACTION = 0.1;  // 10% of diffuse reaches rear
-  const rearDiffuse = ghiDiffuse * REAR_DIFFUSE_FRACTION;
-  // Total rear (ground + diffuse) multiplied by bifaciality
-  const rearEffectiveWm2 = Math.max(0, (rearGround + rearDiffuse) * bifaciality);
+  // ── Rear irradiance: BTP‑2 Equation 9 (Yusufoglu et al. 2014) ──
+  //
+  //   E_rear = α·DHI·(1+cosβ)/2  +  α·(GHI-DHI)·((1+cosβ)/2 − F_V)
+  //
+  //   F_V = shadow view factor, computed from 2D geometry + numerical integration.
+  //   The result is then multiplied by bifaciality.
+  const heightM = heightCm / 100;
+  const rearVF = (1 + Math.cos(betaRad)) / 2; // rear-side ground view factor
 
-  // No temperature derating – formulas strictly follow BTP‑1.
+  const Fv = calculateShadowViewFactor(
+    betaRad, heightM, panelWidthM || DEFAULT_PANEL_CONFIG.widthM,
+    sunElevationRad, sunAzimuthRad, panelAzimuthRad
+  );
+
+  const rearDiffuseComponent = albedo * ghiDiffuse * rearVF;
+  const rearDirectComponent = albedo * ghiBeam * Math.max(0, rearVF - Fv);
+  const rearEffectiveWm2 = Math.max(0, (rearDiffuseComponent + rearDirectComponent) * bifaciality);
+
+  // No temperature derating.
   const totalIrr = frontEffectiveWm2 + rearEffectiveWm2;
   return { frontEffectiveWm2, rearEffectiveWm2, totalEffectiveWm2: Math.max(0, totalIrr), tempDerate: 1 };
 }
@@ -498,7 +619,8 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
       bifaciality: panel.bifaciality,
       latitude: location.latitude,
       longitude: location.longitude,
-      timeIso: irradiance.time[index]
+      timeIso: irradiance.time[index],
+      panelWidthM: panel.widthM
     });
 
     const powerKW =
