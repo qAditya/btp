@@ -4,161 +4,172 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bifacial PV Optimizer</title>
+  <meta name="description" content="24-hour bifacial solar panel simulation using NASA POWER data and BTP-2 shadow model">
   <link rel="stylesheet" href="./styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="container header-inner">
-      <h1>Bifacial PV Optimizer</h1>
-      <p class="subtitle">24-hour bifacial simulation · NASA POWER</p>
-    </div>
-  </header>
+  
+  </div>
 
-  <main class="container">
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>
+      </div>
+      <h1 class="nav-brand">Bifacial PV Optimizer</h1>
+      <div class="nav-links">
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">Configurations</a>
+        <a href="#">Analytics</a>
+        <a href="#">Presets</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="search-bar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+        <input type="text" placeholder="Search systems...">
+      </div>
+      <button class="icon-btn" aria-label="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/></svg>
+      </button>
+      <div class="avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"></div>
+    </div>
+  </nav>
+
+  <main class="dashboard-wrap">
+    <!-- Top KPIs -->
+    <div class="dashboard-grid-top animate-on-scroll">
+      <div class="feature-card">
+        <span class="badge">PREMIUM INTELLIGENCE</span>
+        <h2>Optimize for Maximum<br><span class="text-blue">Albedo Gain</span></h2>
+        <p>Our AI-driven model calculates rear-side irradiance with 99.4% accuracy across diverse terrain types.</p>
+      </div>
+      <div class="kpi-stack">
+        <div class="kpi-card">
+          <div class="kpi-header"><span>Total Configurations</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/></svg></div></div>
+          <div class="kpi-value">1,284</div>
+          <div class="kpi-trend up">↗ +12.4% this month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header"><span>Best Energy Yield</span><div class="kpi-icon yellow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/></svg></div></div>
+          <div class="kpi-value">4.2 <span class="unit">MWh</span></div>
+          <div class="kpi-trend up">↗ +5.2% vs baseline</div>
+        </div>
+        <div class="kpi-card highlighted">
+          <div class="kpi-header"><span>Peak Rear Gain</span><div class="kpi-icon teal"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z"/><path d="M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.616.97.616 1.59 0 .72-.252 1.393-.687 1.954l-.451.583a5.002 5.002 0 0 1-.363.418L13.882 12A1.5 1.5 0 0 1 12.38 13.5H3.62a1.5 1.5 0 0 1-1.502-1.5l1.399-3.702a5.003 5.003 0 0 1-.362-.418l-.452-.583C2.251 6.738 2 6.065 2 5.345c0-.62.208-1.182.616-1.59.106-.107.233-.207.373-.298L3.05 3.26z"/></svg></div></div>
+          <div class="kpi-value">24.8%</div>
+          <div class="kpi-trend success">✓ Optimized state</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Config Grid -->
+    <div class="dashboard-grid-mid">
+
 
     <!-- Location & Date -->
-    <section class="card">
-      <div class="card-header"><h2>📍 Location &amp; Date</h2></div>
-      <div class="grid cols-3">
-        <label>
-          <span class="label-text">Location</span>
-          <input id="locationInput" type="text" placeholder="e.g. Greater Noida">
-        </label>
-        <label>
-          <span class="label-text">Simulation Day (IST)</span>
-          <input id="startDateInput" type="date">
-        </label>
-        <label>
-          <span class="label-text">End Date (auto)</span>
-          <input id="endDateInput" type="date" disabled>
-        </label>
-      </div>
-    </section>
+      <section class="dash-card animate-on-scroll">
+        <div class="card-header"><div class="icon-wrap blue"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg></div><h2>Location &amp; Date</h2></div>
+        <div class="map-placeholder">
+          <!-- We put map pin styling here -->
+          <div class="map-pin"></div>
+        </div>
+        <div class="grid cols-2 mt-md">
+          <label>
+            <span class="label-text">Site Location (Lat/Lon or City)</span>
+            <input id="locationInput" type="text" placeholder="e.g. Greater Noida">
+          </label>
+          <label>
+            <span class="label-text">Analysis Date</span>
+            <input id="startDateInput" type="date">
+            <input id="endDateInput" type="date" disabled style="display:none;"> <!-- Hidden but kept for JS -->
+          </label>
+        </div>
+      </section>
 
     <!-- Sweep Parameters -->
-    <section class="card">
-      <div class="card-header"><h2>⚙️ Sweep Parameters</h2></div>
-
-      <div class="param-group">
-        <h3 class="param-title">Panel Height</h3>
-        <div class="grid cols-3">
-          <label><span class="label-text">Min (cm)</span><input id="heightMin" type="number" value="50"></label>
-          <label><span class="label-text">Max (cm)</span><input id="heightMax" type="number" value="450"></label>
-          <label><span class="label-text">Step (cm)</span><input id="heightStep" type="number" value="50"></label>
+      <section class="dash-card animate-on-scroll">
+        <div class="card-header"><div class="icon-wrap orange"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M6 11.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg></div><h2>Sweep Parameters</h2></div>
+        
+        <div class="param-row">
+          <div class="param-label-row">
+            <span class="param-label">Hub Height (cm) Sweep</span>
+          </div>
+          <div class="slider-mock-container">
+            <input id="heightMin" type="number" class="inline-input" placeholder="Min" value="50">
+            <div class="slider-track"><div class="slider-knob"></div></div>
+            <input id="heightMax" type="number" class="inline-input" placeholder="Max" value="450">
+            <input id="heightStep" type="number" class="inline-input step-input" title="Step" placeholder="Step" value="50">
+          </div>
         </div>
-        <p class="hint">Recommended sweep: 0.5 m to 4.5 m (50‑450 cm) with 0.5 m steps. This range captures the peak rear‑gain region (~1 m clearance) and the subsequent diminishing returns at greater heights.</p>
-      </div>
 
-      <div class="param-group">
-        <h3 class="param-title">Tilt Angle</h3>
-        <div class="grid cols-3">
-          <label><span class="label-text">Min (°)</span><input id="tiltMin" type="number" value="10"></label>
-          <label><span class="label-text">Max (°)</span><input id="tiltMax" type="number" value="50"></label>
-          <label><span class="label-text">Step (°)</span><input id="tiltStep" type="number" value="10"></label>
+        <div class="param-row">
+          <div class="param-label-row">
+            <span class="param-label">System Tilt (&deg;) Sweep</span>
+          </div>
+          <div class="slider-mock-container">
+            <input id="tiltMin" type="number" class="inline-input" placeholder="Min" value="10">
+            <div class="slider-track"><div class="slider-knob" style="left: 30%"></div></div>
+            <input id="tiltMax" type="number" class="inline-input" placeholder="Max" value="50">
+            <input id="tiltStep" type="number" class="inline-input step-input" title="Step" placeholder="Step" value="10">
+          </div>
         </div>
-      </div>
 
-
-      <div class="param-group">
-        <h3 class="param-title">Ground Albedo</h3>
-        <div class="grid cols-3">
-          <label>
-            <span class="label-text">Mode</span>
-            <select id="albedoModeSelect">
-              <option value="single">Single Value (Recommended)</option>
-              <option value="sweep">Sweep Range</option>
-            </select>
-          </label>
-          <label id="albedoPresetLabel">
-            <span class="label-text">Surface Preset</span>
-            <select id="albedoPresetSelect">
-              <option value="custom">Custom</option>
-              <option value="0.20">Grass (0.20)</option>
-              <option value="0.26">Fresh grass (0.26)</option>
-              <option value="0.30">Concrete (0.30)</option>
-              <option value="0.18">Urban (0.18)</option>
-              <option value="0.12">Dry asphalt (0.12)</option>
-              <option value="0.33">Red tiles (0.33)</option>
-              <option value="0.82">Fresh snow (0.82)</option>
-              <option value="0.65">Wet snow (0.65)</option>
-              <option value="0.85">Aluminum (0.85)</option>
-              <option value="0.35">Galvanized steel (0.35)</option>
-            </select>
-          </label>
-          <label id="albedoSingleLabel">
-            <span class="label-text">Albedo</span>
-            <input id="albedoSingle" type="number" value="0.2" step="0.01" min="0.05" max="0.95">
-          </label>
-          <label id="albedoMinLabel" class="is-hidden">
-            <span class="label-text">Min</span>
-            <input id="albedoMin" type="number" value="0.2" step="0.01">
-          </label>
-          <label id="albedoMaxLabel" class="is-hidden">
-            <span class="label-text">Max</span>
-            <input id="albedoMax" type="number" value="0.6" step="0.01">
-          </label>
-          <label id="albedoStepLabel" class="is-hidden">
-            <span class="label-text">Step</span>
-            <input id="albedoStep" type="number" value="0.1" step="0.01">
-          </label>
+        <div class="param-row mt-md">
+          <div class="param-label-row">
+            <span class="param-label">Surface Albedo Settings</span>
+          </div>
+          <div class="grid cols-3 albedo-controls">
+             <select id="albedoModeSelect" class="inline-input">
+                <option value="single">Single Value</option>
+                <option value="sweep">Sweep Range</option>
+             </select>
+             <select id="albedoPresetSelect" class="inline-input bg-blue-light">
+                <option value="custom">Custom</option>
+                <option value="0.20">Grass (0.20)</option>
+                <option value="0.35">Sand (0.35)</option>
+                <option value="0.82">Snow (0.82)</option>
+             </select>
+             <div id="albedoSingleLabel" class="slider-mock-container albedo-inputs">
+                <input id="albedoSingle" type="number" class="inline-input" value="0.2" step="0.01">
+             </div>
+             <div id="albedoSweepGroup" style="display:none; gap:6px; flex: 2;">
+                <input id="albedoMin" type="number" class="inline-input" value="0.2" step="0.01" placeholder="Min">
+                <input id="albedoMax" type="number" class="inline-input" value="0.6" step="0.01" placeholder="Max">
+                <input id="albedoStep" type="number" class="inline-input" value="0.1" step="0.01" placeholder="Step">
+             </div>
+          </div>
         </div>
-      </div>
 
-      <p class="hint">Rear gain peaks near 1 m clearance and declines at greater heights (view-factor effect).</p>
+        <div class="dev-controls mt-sm is-hidden">
+          <label class="checkbox"><input id="useMatlabInput" type="checkbox"><span>Use MATLAB engine</span></label>
+          <label class="checkbox"><input id="strictMatlabInput" type="checkbox" checked><span>Strict MATLAB (no JS fallback)</span></label>
+        </div>
 
-      <div class="grid cols-2 mt-sm">
-        <label class="checkbox"><input id="useMatlabInput" type="checkbox"><span>Use MATLAB engine</span></label>
-        <label class="checkbox"><input id="strictMatlabInput" type="checkbox"><span>Strict MATLAB (no JS fallback)</span></label>
-      </div>
+      </section>
+    </div> <!-- end Config Grid -->
+    
+    <div class="main-action-area">
+      <button id="fetchIrradianceBtn" type="button" style="display:none;">Fetch</button>
+      <button id="runAnalysisBtn" type="button" class="btn-mega">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+        RUN FULL OPTIMIZATION SWEEP
+      </button>
+      <div id="statusText" class="status-msg">Ready</div>
+    </div>
 
-      <div class="actions">
-        <button id="fetchIrradianceBtn" type="button" class="btn btn-primary">Fetch Irradiance</button>
-        <button id="runAnalysisBtn" type="button" class="btn btn-accent">Run Analysis</button>
-      </div>
-      <p id="statusText" class="status">Ready</p>
-    </section>
 
-    <!-- Model Formulas -->
-    <section class="card">
-      <div class="card-header"><h2>📐 Model Formulas</h2></div>
-      <div class="formula-list">
-        <p><strong>Front irradiance</strong> (equator‑facing, Liu‑Jordan isotropic):</p>
-        <pre>beam_tilted = DNI × max(0, cos I)
-sky_vf = (1 + cos β)/2
-gnd_vf = (1 − cos β)/2
-ghi_diffuse = GHI × kd
-front = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf</pre>
-        <p><strong>Rear irradiance</strong> (BTP‑2, Yusufoglu et al. 2014, Eq. 9):</p>
-        <pre>rear_vf = (1 + cos β)/2
-E_rear = α×DHI×rear_vf + α×(GHI−DHI)×(rear_vf − F_V)
-rear_effective = E_rear × bifaciality</pre>
-        <p><strong>Shadow View Factor (F<sub>V</sub>)</strong>:</p>
-        <pre>γ_profile = atan(tan(sun_elev) / cos(sun_az − panel_az))
-shadow_lower = h / tan(γ_profile)
-shadow_upper = (h + W·sin β) / tan(γ_profile)
-F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
-        <p>F<sub>V</sub> accounts for the module's own shadow blocking direct ground reflection.
-           Solar azimuth is computed analytically from site coordinates.</p>
-        <p><strong>Total effective</strong> = front + rear (≥0). No temperature correction applied.</p>
-      </div>
-    </section>
-
-    <!-- Geometry Diagram -->
-    <section class="card">
-      <div class="card-header"><h2>🔭 Bifacial Panel Geometry & Radiation Components</h2></div>
-      <!-- simplified: use provided image file -->
-      <img src="images/image.png" alt="Bifacial geometry" style="max-width:100%; border:1px solid #ddd; border-radius:4px;" />
-    </section>
+    
 
     <!-- Irradiance Results -->
-    <section id="irradianceSection" class="card is-hidden">
-      <div class="card-header"><h2>☀️ Irradiance Data</h2></div>
+    <section id="irradianceSection" class="is-hidden animate-on-scroll results-wrapper">
+      <div class="section-badge"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.5 8a.5.5 0 0 1-.5.5h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0v3h3a.5.5 0 0 1 .5.5zM8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/></svg> Irradiance Data</div>
       <div id="irradianceContent" class="result-content is-hidden">
         <div id="irradianceSummary" class="summary"></div>
         <div class="chart-wrap"><canvas id="irradianceChart"></canvas></div>
@@ -167,8 +178,8 @@ F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
     </section>
 
     <!-- Analysis Results -->
-    <section id="analysisSection" class="card is-hidden">
-      <div class="card-header"><h2>📊 Analysis Results</h2></div>
+    <section id="analysisSection" class="is-hidden animate-on-scroll results-wrapper">
+      <div class="section-badge"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/></svg> Analysis Results</div>
       <div id="analysisContent" class="result-content is-hidden">
         <div id="analysisSummary" class="summary"></div>
         <div class="inline-controls">
@@ -207,14 +218,94 @@ F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
       </div>
     </section>
 
-
   </main>
 
   <footer class="footer">
     <div class="container">
-      <p>BTP Project · NASA POWER API</p>
+      <p class="footer-brand">Bifacial PV Optimizer</p>
+      <p>BTP Project · <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER API</a> · BTP-2 Shadow Model</p>
     </div>
   </footer>
+
+  <!-- Scroll Animation Observer -->
+  <script>
+  (function() {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+      observer.observe(el);
+    });
+
+    // Also observe dynamically shown sections
+    const mutObs = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          const t = m.target;
+          if (t.classList.contains('animate-on-scroll') && !t.classList.contains('is-hidden')) {
+            observer.observe(t);
+            // trigger visibility check
+            setTimeout(function() {
+              if (t.getBoundingClientRect().top < window.innerHeight) {
+                t.classList.add('is-visible');
+              }
+            }, 50);
+          }
+        }
+      });
+    });
+    document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+      mutObs.observe(el, { attributes: true });
+    });
+
+    // Interactive 3D tilt effect for hero image
+    const tiltEl = document.querySelector('.interactive-tilt-container');
+    const tiltImg = document.querySelector('.interactive-tilt');
+    const glow = document.querySelector('.hero-image-glow');
+
+    if(tiltEl) {
+      tiltEl.addEventListener('mousemove', (e) => {
+        const rect = tiltEl.getBoundingClientRect();
+        const x = e.clientX - rect.left; // x position within the element.
+        const y = e.clientY - rect.top;  // y position within the element.
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = ((y - centerY) / centerY) * -15; // Max 15deg
+        const rotateY = ((x - centerX) / centerX) * 15;
+
+        tiltImg.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+        
+        if(glow) {
+            glow.style.transform = `translate(${x - rect.width/2}px, ${y - rect.height/2}px)`;
+            glow.style.opacity = '1';
+        }
+      });
+      tiltEl.addEventListener('mouseleave', () => {
+        tiltImg.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        if(glow) glow.style.opacity = '0';
+      });
+    }
+
+    // Modern Button hover effect positioning
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        btn.style.setProperty('--x', `${x}px`);
+        btn.style.setProperty('--y', `${y}px`);
+      });
+    });
+
+  })();
+  </script>
 
 </body>
 </html>
