@@ -59,13 +59,17 @@ Chart.defaults.font.family = "'Space Mono', monospace";
 /* ─── Config ─── */
 const API_BASE_URL = (window.localStorage.getItem("pvApiBaseUrl") || "http://localhost:4000").replace(/\/$/, "");
 
-// Setup default dates
+// Setup default dates — NASA POWER hourly data lags ~7 days,
+// so default to the same day one year ago (guaranteed available).
 const tzIST = { timeZone: "Asia/Kolkata" };
-let now = new Date();
-if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-const todayStr = now.toLocaleDateString("en-CA", tzIST);
-startDateInput.value = todayStr;
-endDateInput.value = todayStr;
+function formatDateInput(d) {
+    const y = d.getUTCFullYear(), m = String(d.getUTCMonth() + 1).padStart(2, "0"), day = String(d.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+const nowUtc = new Date();
+const defaultUtcDay = new Date(Date.UTC(nowUtc.getUTCFullYear() - 1, nowUtc.getUTCMonth(), nowUtc.getUTCDate()));
+startDateInput.value = formatDateInput(defaultUtcDay);
+endDateInput.value = startDateInput.value;
 
 startDateInput.addEventListener("change", () => {
     endDateInput.value = startDateInput.value;
@@ -165,7 +169,8 @@ function setStatus(msg, isError = false) {
 function getBasePayload() {
     return {
         location: locationInput.value || "Greater Noida",
-        date: startDateInput.value
+        startDate: startDateInput.value,
+        endDate: endDateInput.value
     };
 }
 
@@ -190,10 +195,10 @@ async function postJson(url, body) {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Server fault: ${res.status}`);
+      throw new Error(err.message || err.error || `Server fault: ${res.status}`);
     }
     const data = await res.json();
-    if (data.status === "error") throw new Error(data.message);
+    if (data.status === "error" || data.success === false) throw new Error(data.message);
     return data ? data.data : null;
 }
   
@@ -212,17 +217,13 @@ function renderIrradianceChart(hourly) {
   
     const hours = hourly.map(p => formatHourLabel(p.time));
     const ghi = hourly.map(p => p.ghiWhM2 ?? p.ghiWm2);
-    const dni = hourly.map(p => p.dniWm2);
-    const dhi = hourly.map(p => p.dhiWm2);
   
     irradianceChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels: hours,
         datasets: [
-          { label: 'GHI', data: ghi, borderColor: '#f5a623', backgroundColor: 'rgba(245, 166, 35, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 },
-          { label: 'DNI', data: dni, borderColor: '#00d4ff', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], tension: 0.1, pointRadius: 0 },
-          { label: 'DHI', data: dhi, borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, tension: 0.1, pointRadius: 0 }
+          { label: 'GHI', data: ghi, borderColor: '#f5a623', backgroundColor: 'rgba(245, 166, 35, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 }
         ]
       },
       options: {
@@ -248,15 +249,17 @@ function renderIrradianceChart(hourly) {
   
 function renderIrradianceSummary(data) {
     if (!irradianceSummary) return;
+    const s = data.summary || {};
+    const totalKWh = ((s.totalGhiWhM2 || 0) / 1000).toFixed(2);
     irradianceSummary.innerHTML = `
       <div class="summary-item"><span class="k">Location</span><span class="v">${data.location?.name || "-"}</span></div>
-      <div class="summary-item"><span class="k">Total GHI</span><span class="v">${(data.daily?.ghiKWhM2Day || 0).toFixed(2)} kWh/m²</span></div>
-      <div class="summary-item"><span class="k">Data Points</span><span class="v">${data.points || "-"}</span></div>
-      <div class="summary-item"><span class="k">Elevation</span><span class="v">${Math.round(data.location?.elevation || 0)} m</span></div>
+      <div class="summary-item"><span class="k">Total GHI</span><span class="v">${totalKWh} kWh/m²</span></div>
+      <div class="summary-item"><span class="k">Data Points</span><span class="v">${s.hours || "-"}</span></div>
+      <div class="summary-item"><span class="k">Peak GHI</span><span class="v">${s.peakGhiWhM2 ?? "-"} Wh/m²</span></div>
     `;
     if (csvLinkRow) {
-        csvLinkRow.innerHTML = data.csvUrl 
-            ? `NASA RAW DATA EXPORT: <a href="${data.csvUrl}" target="_blank" rel="noreferrer">DOWNLOAD CSV</a>` 
+        csvLinkRow.innerHTML = data.source?.csvUrl 
+            ? `NASA RAW DATA EXPORT: <a href="${data.source.csvUrl}" target="_blank" rel="noreferrer">DOWNLOAD CSV</a>` 
             : "";
     }
 }
@@ -424,7 +427,10 @@ function rankRowsByObjective(rows, mode) {
 
 function getBaseRowsForRanking(data) {
     if (!data) return [];
-    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.chartData) && data.chartData.length > 0) return data.chartData;
+    if (Array.isArray(data.topConfigurations) && data.topConfigurations.length > 0) return data.topConfigurations;
+    if (Array.isArray(data.pureRankingTopConfigurations) && data.pureRankingTopConfigurations.length > 0) return data.pureRankingTopConfigurations;
+    if (Array.isArray(data.results) && data.results.length > 0) return data.results;
     if (data.optimalConfiguration) return [data.optimalConfiguration];
     return [];
 }
@@ -484,10 +490,10 @@ function renderAnalysisData(data, mode) {
             <td>${r.heightCm}</td>
             <td>${r.tiltDeg}</td>
             <td>${Number(r.albedo||0).toFixed(2)}</td>
-            <td>${Number(r.totalEnergyKWh||0).toFixed(2)}</td>
-            <td>${Number(r.peakPowerKW||0).toFixed(2)}</td>
-            <td style="color:var(--amber); font-weight:bold;">${Number(r.rearGainPercent||0).toFixed(2)}%</td>
-            <td>${Number(r.objectiveValue||0).toFixed(objMeta.digits)}</td>
+            <td>${Number(r.totalEnergyKWh||0).toFixed(5)}</td>
+            <td>${Number(r.peakPowerKW||0).toFixed(5)}</td>
+            <td style="color:var(--amber); font-weight:bold;">${Number(r.rearGainPercent||0).toFixed(4)}%</td>
+            <td>${Number(r.objectiveValue||0).toFixed(5)}</td>
             `;
             topTableBody.appendChild(tr);
         });

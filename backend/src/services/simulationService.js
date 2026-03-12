@@ -272,12 +272,39 @@ function buildIrradianceSummary(irradiance) {
 export function buildIrradianceResponse({ location, irradiance }) {
   const normalized = normalizeIrradiancePayload(irradiance);
   const hourly = [];
+  const latDeg = location?.latitude || 0;
 
   for (let index = 0; index < normalized.time.length; index += 1) {
     const ghiWhM2 = roundTo(Math.max(0, toFiniteNumber(normalized.ghi[index], 0)), 3);
+
+    // Decompose GHI into DNI and DHI using Erbs clearness-index model
+    let dniWm2 = 0;
+    let dhiWm2 = 0;
+    const isoTime = normalized.time[index];
+    if (ghiWhM2 > 0 && isoTime) {
+      const d = new Date(isoTime);
+      const doy = getDayOfYear(isoTime);
+      const dec = solarDeclination(doy);
+      const eot = equationOfTime(doy);
+      const solarNoonOffset = eot + 4 * (location?.longitude || 0);
+      const utcHour = d.getUTCHours() + d.getUTCMinutes() / 60;
+      const solarTime = utcHour + solarNoonOffset / 60;
+      const hourAngle = (solarTime - 12) * 15;
+      const cosZ = cosSolarZenith(latDeg, dec, hourAngle);
+      const e0 = extraterrestrialHorizontal(doy, cosZ);
+      if (e0 > 0 && cosZ > 0) {
+        const kt = Math.min(ghiWhM2 / e0, 1);
+        const kd = diffuseFraction(kt);
+        dhiWm2 = roundTo(ghiWhM2 * kd, 2);
+        dniWm2 = cosZ > 0.01 ? roundTo((ghiWhM2 - dhiWm2) / cosZ, 2) : 0;
+      }
+    }
+
     hourly.push({
-      time: normalized.time[index],
+      time: isoTime,
       ghiWhM2,
+      dniWm2,
+      dhiWm2,
       // Legacy key kept for chart compatibility.
       ghiWm2: ghiWhM2
     });
