@@ -1,407 +1,556 @@
-/* ─── DOM References ─── */
-const locationInput = document.getElementById("locationInput");
-const startDateInput = document.getElementById("startDateInput");
-const endDateInput = document.getElementById("endDateInput");
-const fetchIrradianceBtn = document.getElementById("fetchIrradianceBtn");
-const runAnalysisBtn = document.getElementById("runAnalysisBtn");
-const useMatlabInput = document.getElementById("useMatlabInput");
-const strictMatlabInput = document.getElementById("strictMatlabInput");
-const statusText = document.getElementById("statusText");
-const irradianceSection = document.getElementById("irradianceSection");
-const analysisSection = document.getElementById("analysisSection");
-const irradianceContent = document.getElementById("irradianceContent");
-const analysisContent = document.getElementById("analysisContent");
-const irradianceSummary = document.getElementById("irradianceSummary");
-const analysisSummary = document.getElementById("analysisSummary");
-const csvLinkRow = document.getElementById("csvLinkRow");
-const topTableBody = document.querySelector("#topTable tbody");
-const objectiveSelect = document.getElementById("objectiveSelect");
-const objectiveMetricHeader = document.getElementById("objectiveMetricHeader");
-const heightMinInput = document.getElementById("heightMin");
-const heightMaxInput = document.getElementById("heightMax");
-const heightStepInput = document.getElementById("heightStep");
-const tiltMinInput = document.getElementById("tiltMin");
-const tiltMaxInput = document.getElementById("tiltMax");
-const tiltStepInput = document.getElementById("tiltStep");
-const albedoMinInput = document.getElementById("albedoMin");
-const albedoMaxInput = document.getElementById("albedoMax");
-const albedoStepInput = document.getElementById("albedoStep");
-const albedoSingleInput = document.getElementById("albedoSingle");
-const albedoModeSelect = document.getElementById("albedoModeSelect");
-const albedoPresetSelect = document.getElementById("albedoPresetSelect");
-const albedoPresetLabel = document.getElementById("albedoPresetLabel");
-const albedoSingleLabel = document.getElementById("albedoSingleLabel");
-const albedoMinLabel = document.getElementById("albedoMinLabel");
-const albedoMaxLabel = document.getElementById("albedoMaxLabel");
-const albedoStepLabel = document.getElementById("albedoStepLabel");
+// ─── DOM ELEMENTS ───
+const locationInput = document.getElementById('locationInput');
+const startDateInput = document.getElementById('startDateInput');
+const endDateInput = document.getElementById('endDateInput');
+
+// Parameters
+const heightMin = document.getElementById('heightMin');
+const heightMax = document.getElementById('heightMax');
+const heightStep = document.getElementById('heightStep');
+const tiltMin = document.getElementById('tiltMin');
+const tiltMax = document.getElementById('tiltMax');
+const tiltStep = document.getElementById('tiltStep');
+
+const albedoModeSelect = document.getElementById('albedoModeSelect');
+const albedoTiles = document.querySelectorAll('.albedo-tile');
+const albedoSingle = document.getElementById('albedoSingle');
+const albedoMin = document.getElementById('albedoMin');
+const albedoMax = document.getElementById('albedoMax');
+const albedoStep = document.getElementById('albedoStep');
+const albedoPresetSelect = document.getElementById('albedoPresetSelect'); 
+
+// Advanced View Factor toggle (Visual Feedback)
+const advancedViewFactorToggle = document.getElementById('advancedViewFactorToggle');
+const vfDynamicFormulas = document.getElementById('vfDynamicFormulas');
+
+const useMatlabInput = document.getElementById('useMatlabInput');
+const strictMatlabInput = document.getElementById('strictMatlabInput');
+
+const fetchIrradianceBtn = document.getElementById('fetchIrradianceBtn');
+const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+const statusText = document.getElementById('statusText');
+const loadingOverlay = document.getElementById('loadingOverlay');
+
+const irradianceSection = document.getElementById('irradianceSection');
+const irradianceContent = document.getElementById('irradianceContent');
+const irradianceSummary = document.getElementById('irradianceSummary');
+const csvLinkRow = document.getElementById('csvLinkRow');
+
+const analysisSection = document.getElementById('analysisSection');
+const analysisContent = document.getElementById('analysisContent');
+const analysisSummary = document.getElementById('analysisSummary');
+const objectiveSelect = document.getElementById('objectiveSelect');
+const topTableBody = document.querySelector('#topTable tbody');
+const objectiveMetricHeader = document.getElementById('objectiveMetricHeader');
+const optimalConfigBanner = document.getElementById('optimalConfigBanner');
+
+let irradianceChartInstance = null;
+let rankingChartInstance = null;
+let ivChartInstance = null;
+let pvChartInstance = null;
+
+let analysisResultsGlobal = [];
+
+// Apply Dark Mission Control Chart Defaults globally
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+Chart.defaults.font.family = "'Space Mono', monospace";
 
 /* ─── Config ─── */
 const API_BASE_URL = (window.localStorage.getItem("pvApiBaseUrl") || "http://localhost:4000").replace(/\/$/, "");
-const REQUEST_TIMEZONE = "IST";
 
-let irradianceChart = null;
-let rankingChart = null;
-let ivChart = null;
-let pvChart = null;
-let latestAnalysisData = null;
+// Setup default dates
+const tzIST = { timeZone: "Asia/Kolkata" };
+let now = new Date();
+if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+const todayStr = now.toLocaleDateString("en-CA", tzIST);
+startDateInput.value = todayStr;
+endDateInput.value = todayStr;
 
-const CHART_COLORS = ["#4f46e5", "#0891b2", "#f59e0b", "#ef4444", "#8b5cf6"];
+startDateInput.addEventListener("change", () => {
+    endDateInput.value = startDateInput.value;
+});
 
-const OBJECTIVE_META = {
-  energy: { label: "Max Energy (kWh)", metricLabel: "Total Energy (kWh)", metricKey: "totalEnergyKWh", digits: 4 },
-  rearGain: { label: "Max Rear Gain (%)", metricLabel: "Rear Gain (%)", metricKey: "rearGainPercent", digits: 4 },
-  balanced: { label: "Balanced", metricLabel: "Balanced Score", metricKey: "balancedScore", digits: 2 },
-  peakPower: { label: "Max Peak Power (kW)", metricLabel: "Peak Power (kW)", metricKey: "peakPowerKW", digits: 4 }
-};
-
-// map common surface type names to albedo values (2-decimal strings)
-const ALBEDO_PRESETS_MAP = {
-  "0.20": "Grass",
-  "0.26": "Fresh grass",
-  "0.30": "Concrete",
-  "0.18": "Urban",
-  "0.12": "Dry asphalt",
-  "0.33": "Red tiles",
-  "0.82": "Fresh snow",
-  "0.65": "Wet snow",
-  "0.85": "Aluminum",
-  "0.35": "Galvanized steel"
-};
-
-function formatAlbedo(value) {
-  const num = toNumber(value, null);
-  if (!Number.isFinite(num)) return "-";
-  const key = num.toFixed(2);
-  // exact match first
-  let name = ALBEDO_PRESETS_MAP[key];
-  if (name) return `${name} (${key})`;
-  // no exact match - find closest preset by numeric difference
-  let closest = null;
-  let closestDiff = Infinity;
-  for (const k in ALBEDO_PRESETS_MAP) {
-    const v = Number(k);
-    if (!Number.isFinite(v)) continue;
-    const d = Math.abs(v - num);
-    if (d < closestDiff) {
-      closestDiff = d;
-      closest = k;
+// Update display based on mode selection
+if (albedoModeSelect) {
+  albedoModeSelect.addEventListener('change', () => {
+    const mode = albedoModeSelect.value;
+    if (mode === 'single') {
+        document.getElementById('albedoSingleLabel').classList.remove('is-hidden');
+        document.getElementById('albedoPresetLabel').classList.remove('is-hidden');
+        document.getElementById('albedoMinLabel').classList.add('is-hidden');
+        document.getElementById('albedoMaxLabel').classList.add('is-hidden');
+        document.getElementById('albedoStepLabel').classList.add('is-hidden');
+    } else {
+        document.getElementById('albedoSingleLabel').classList.add('is-hidden');
+        document.getElementById('albedoPresetLabel').classList.add('is-hidden');
+        document.getElementById('albedoMinLabel').classList.remove('is-hidden');
+        document.getElementById('albedoMaxLabel').classList.remove('is-hidden');
+        document.getElementById('albedoStepLabel').classList.remove('is-hidden');
     }
-  }
-  if (closest !== null) {
-    name = ALBEDO_PRESETS_MAP[closest];
-    return `${name} (${num.toFixed(2)})`;
-  }
-  return key;
+  });
 }
 
-/* ─── Utilities ─── */
-function toNumber(value, fallback = 0) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function toOptionalNumber(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function roundTo(value, digits = 3) {
-  return Number(toNumber(value, 0).toFixed(digits));
-}
-
-function formatDateInput(date) {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function setInitialDates() {
-  const nowUtc = new Date();
-  const defaultUtcDay = new Date(Date.UTC(nowUtc.getUTCFullYear() - 1, nowUtc.getUTCMonth(), nowUtc.getUTCDate()));
-  startDateInput.value = formatDateInput(defaultUtcDay);
-  endDateInput.value = startDateInput.value;
-  endDateInput.disabled = true;
-}
-
-function setStatus(message, isError = false) {
-  statusText.textContent = message;
-  statusText.style.color = isError ? "#dc2626" : "";
-}
-
-function setBusy(isBusy) {
-  fetchIrradianceBtn.disabled = isBusy;
-  runAnalysisBtn.disabled = isBusy;
-}
-
-function setVisible(el, show) { if (el) el.classList.toggle("is-hidden", !show); }
-function summaryItem(label, value) {
-  return `<div class="summary-item"><div class="k">${label}</div><div class="v">${value}</div></div>`;
-}
-
-function formatHourLabel(t) { return typeof t === "string" && t.length >= 16 ? t.slice(11, 16) : String(t || "-"); }
-function formatValue(v, d = 4) { const p = Number(v); return Number.isFinite(p) ? p.toFixed(d) : "-"; }
-function getObjectiveMode() { return objectiveSelect && OBJECTIVE_META[objectiveSelect.value] ? objectiveSelect.value : "energy"; }
-function getObjectiveMeta(mode) { return OBJECTIVE_META[mode] || OBJECTIVE_META.energy; }
-
-/* ─── Ranking ─── */
-function getBaseRowsForRanking(data) {
-  // chartData holds hourly points (used for plotting); it must *not* be used
-  // for ranking because the structure is different and leads to incorrect
-  // values in the table (e.g. average irradiance being shown as energy).
-  // Always prefer configuration summaries when available.
-  if (Array.isArray(data?.pureRankingTopConfigurations) && data.pureRankingTopConfigurations.length) {
-    return data.pureRankingTopConfigurations;
-  }
-  if (Array.isArray(data?.topConfigurations) && data.topConfigurations.length) {
-    return data.topConfigurations;
-  }
-  if (data?.optimalConfiguration) return [data.optimalConfiguration];
-  // fall back to chartData only if no configuration summaries exist
-  if (Array.isArray(data?.chartData) && data.chartData.length) return data.chartData;
-  return [];
-}
-
-function getMinMax(rows, key) {
-  let min = Infinity, max = -Infinity;
-  for (const r of rows) { const v = toNumber(r[key], NaN); if (Number.isFinite(v)) { min = Math.min(min, v); max = Math.max(max, v); } }
-  return Number.isFinite(min) ? { min, span: Math.max(1e-9, max - min) } : { min: 0, span: 1 };
-}
-
-function normalizeRow(row) {
-  return {
-    ...row,
-    configurationId: row?.configurationId || `H${toNumber(row?.heightCm)}_T${toNumber(row?.tiltDeg)}_A${toNumber(row?.albedo)}`,
-    heightCm: toNumber(row?.heightCm, 0),
-    tiltDeg: toNumber(row?.tiltDeg, 0),
-    albedo: toNumber(row?.albedo, 0),
-    totalEnergyKWh: toNumber(row?.totalEnergyKWh, 0),
-    peakPowerKW: toNumber(row?.peakPowerKW, 0),
-    rearGainPercent: toNumber(row?.rearGainPercent, 0),
-    frontSharePercent: toOptionalNumber(row?.frontSharePercent)
-  };
-}
-
-function rankRowsByObjective(rows, mode) {
-  const normalized = rows.map(normalizeRow);
-
-  if (mode === "balanced") {
-    const en = getMinMax(normalized, "totalEnergyKWh");
-    const rn = getMinMax(normalized, "rearGainPercent");
-    const pn = getMinMax(normalized, "peakPowerKW");
-    normalized.forEach((r) => {
-      const score = 0.5 * ((r.totalEnergyKWh - en.min) / en.span)
-                  + 0.3 * ((r.rearGainPercent - rn.min) / rn.span)
-                  + 0.2 * ((r.peakPowerKW - pn.min) / pn.span);
-      r.objectiveSortValue = score;
-      r.balancedScore = score * 100;
-      r.objectiveValue = r.balancedScore;
+// Albedo Visual Tiles logic
+if (albedoTiles.length > 0) {
+    albedoTiles.forEach(tile => {
+        tile.addEventListener('click', () => {
+            albedoTiles.forEach(t => t.classList.remove('active'));
+            tile.classList.add('active');
+            
+            const val = tile.dataset.val;
+            if (val !== 'custom') {
+                if (albedoSingle) {
+                    albedoSingle.value = val;
+                    albedoSingle.disabled = false;
+                }
+                if (albedoPresetSelect) {
+                    albedoPresetSelect.value = val;
+                }
+            } else {
+                if (albedoSingle) {
+                    albedoSingle.disabled = false;
+                    albedoSingle.focus();
+                }
+            }
+        });
     });
-  } else {
-    const key = getObjectiveMeta(mode).metricKey;
-    normalized.forEach((r) => { r.objectiveSortValue = toNumber(r[key], 0); r.objectiveValue = r.objectiveSortValue; });
+
+    if (albedoSingle) {
+        albedoSingle.addEventListener('input', () => {
+            albedoTiles.forEach(t => t.classList.remove('active'));
+            const match = Array.from(albedoTiles).find(t => t.dataset.val === albedoSingle.value);
+            if (match) {
+                match.classList.add('active');
+            } else {
+                const customTile = document.querySelector('.albedo-tile[data-val="custom"]');
+                if (customTile) customTile.classList.add('active');
+            }
+        });
+    }
+}
+
+
+// View Factor UI feedback
+if (advancedViewFactorToggle && vfDynamicFormulas) {
+    advancedViewFactorToggle.addEventListener('change', () => {
+        if (advancedViewFactorToggle.checked) {
+            vfDynamicFormulas.classList.remove('is-hidden');
+        } else {
+            vfDynamicFormulas.classList.add('is-hidden');
+        }
+    });
+}
+
+
+// Show/Hide Overlay helper
+function setLoading(isLoad) {
+  if (loadingOverlay) {
+      if(isLoad) {
+          loadingOverlay.classList.remove('is-hidden');
+      } else {
+          loadingOverlay.classList.add('is-hidden');
+      }
   }
-
-  normalized.sort((a, b) => b.objectiveSortValue - a.objectiveSortValue || b.totalEnergyKWh - a.totalEnergyKWh || b.peakPowerKW - a.peakPowerKW || b.rearGainPercent - a.rearGainPercent);
-  return normalized.map((r, i) => ({ ...r, rank: i + 1 }));
 }
 
-/* ─── Render Functions ─── */
-function renderIrradianceSummary(data) {
-  const s = data.summary || {}, loc = data.location || {}, dr = data.dateRange || {}, src = data.source || {};
-  irradianceSummary.innerHTML = [
-    summaryItem("Location", loc.name || "-"),
-    summaryItem("Date", `${dr.startDate || "-"} → ${dr.endDate || "-"}`),
-    summaryItem("Timezone", loc.timezone || "-"),
-    summaryItem("Hours", s.hours ?? "-"),
-    summaryItem("Total GHI (Wh/m²)", s.totalGhiWhM2 ?? "-"),
-    summaryItem("Avg Irradiance (W/m²)", s.averageEquivalentGhiWm2 ?? s.averageGhiWm2 ?? "-"),
-    summaryItem("Peak GHI (Wh/m²)", s.peakGhiWhM2 ?? s.peakGhiWm2 ?? "-")
-  ].join("");
-  csvLinkRow.innerHTML = src?.csvUrl ? `NASA CSV: <a href="${src.csvUrl}" target="_blank" rel="noreferrer">Download</a>` : "";
+function setStatus(msg, isError = false) {
+    if (!statusText) return;
+    statusText.textContent = msg;
+    statusText.style.color = isError ? "var(--error)" : "var(--cyan)";
 }
 
-function renderAnalysisSummary(data, mode, winner) {
-  const obj = getObjectiveMeta(mode);
-  const w = winner || data?.optimalConfiguration || {};
-  analysisSummary.innerHTML = [
-    summaryItem("Engine", data.engine || data.source || "-"),
-    summaryItem("Objective", obj.label),
-    summaryItem("Combinations", data.combinationsTested ?? "-"),
-    summaryItem("Optimal Height", `${w.heightCm ?? "-"} cm`),
-    summaryItem("Optimal Tilt", `${w.tiltDeg ?? "-"}°`),
-    summaryItem("Albedo", formatAlbedo(w.albedo)),
-    summaryItem("Energy (kWh)", w.totalEnergyKWh ?? "-"),
-    summaryItem("Peak (kW)", w.peakPowerKW ?? "-"),
-    summaryItem("Rear Gain", `${w.rearGainPercent ?? "-"}%`)
-  ].join("");
-}
 
-function renderTopTable(rows, mode) {
-  const obj = getObjectiveMeta(mode);
-  if (objectiveMetricHeader) objectiveMetricHeader.textContent = obj.metricLabel;
-  topTableBody.innerHTML = "";
-  rows.forEach((r) => {
-    const tr = document.createElement("tr");
-    // note: header does not include a front-share column, so we omit it here
-    tr.innerHTML = `<td>${r.rank}</td><td>${r.heightCm}</td><td>${r.tiltDeg}</td><td>${formatAlbedo(r.albedo)}</td><td>${r.totalEnergyKWh}</td><td>${r.peakPowerKW}</td><td>${r.rearGainPercent}</td><td>${formatValue(r.objectiveValue, obj.digits)}</td>`;
-    topTableBody.appendChild(tr);
-  });
-}
-
-/* ─── Charts ─── */
-function renderIrradianceChart(hourly) {
-  const labels = hourly.map((p) => formatHourLabel(p.time));
-  const points = hourly.map((p) => p.ghiWhM2 ?? p.ghiWm2);
-  if (irradianceChart) irradianceChart.destroy();
-  irradianceChart = new Chart(document.getElementById("irradianceChart"), {
-    type: "line",
-    data: { labels, datasets: [{ label: "GHI (Wh/m²)", data: points, borderColor: "#4f46e5", backgroundColor: "rgba(79,70,229,0.1)", fill: true, tension: 0.3, pointRadius: 0 }] },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { beginAtZero: true } } }
-  });
-}
-
-function renderRankingChart(rows, mode) {
-  const obj = getObjectiveMeta(mode);
-  const top = rows.slice(0, 10);
-  if (rankingChart) rankingChart.destroy();
-  rankingChart = new Chart(document.getElementById("rankingChart"), {
-    type: "bar",
-    data: { labels: top.map((r) => r.configurationId), datasets: [{ label: obj.metricLabel, data: top.map((r) => toNumber(r.objectiveValue, 0)), backgroundColor: "#0891b2", borderRadius: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxRotation: 55, minRotation: 25 } }, y: { beginAtZero: true } } }
-  });
-}
-
-function getColor(i, a = 1) {
-  const hex = CHART_COLORS[i % CHART_COLORS.length];
-  if (a >= 1) return hex;
-  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-function getDash(i) { return [[], [8, 4], [3, 3], [10, 3, 2, 3], [2, 3, 8, 3]][i % 5]; }
-
-function renderIvPvCharts(curves) {
-  if (ivChart) { ivChart.destroy(); ivChart = null; }
-  if (pvChart) { pvChart.destroy(); pvChart = null; }
-  const sel = [...(curves || [])].sort((a, b) => (a.energyRank || 9999) - (b.energyRank || 9999)).slice(0, 5);
-  if (!sel.length) return;
-
-  function lbl(c) {
-    const r = Number(c.estimatedParameters?.energyRatioToBest);
-    return Number.isFinite(r) ? `Rank ${c.energyRank || "-"} (${Math.round(r * 100)}%)` : `Rank ${c.energyRank || "-"}`;
-  }
-
-  const ivLine = sel.map((c, i) => ({ label: lbl(c), data: (c.ivCurve || []).map((p) => ({ x: p.voltageV, y: p.currentA })), parsing: false, borderColor: getColor(i), backgroundColor: getColor(i, 0.12), borderDash: getDash(i), borderWidth: 2, tension: 0.2, pointRadius: 0 }));
-  const ivMpp = sel.map((c, i) => ({ type: "scatter", label: `${lbl(c)} MPP`, data: [{ x: c.estimatedParameters?.vmppV ?? 0, y: c.estimatedParameters?.imppA ?? 0 }], parsing: false, borderColor: getColor(i), backgroundColor: getColor(i), pointRadius: 4, showLine: false }));
-  const pvLine = sel.map((c, i) => ({ label: lbl(c), data: (c.pvCurve || []).map((p) => ({ x: p.voltageV, y: p.powerKW })), parsing: false, borderColor: getColor(i), backgroundColor: getColor(i, 0.12), borderDash: getDash(i), borderWidth: 2, tension: 0.2, pointRadius: 0 }));
-  const pvMpp = sel.map((c, i) => ({ type: "scatter", label: `${lbl(c)} MPP`, data: [{ x: c.estimatedParameters?.vmppV ?? 0, y: c.estimatedParameters?.pmppKW ?? 0 }], parsing: false, borderColor: getColor(i), backgroundColor: getColor(i), pointRadius: 4, showLine: false }));
-
-  ivChart = new Chart(document.getElementById("ivChart"), { type: "line", data: { datasets: [...ivLine, ...ivMpp] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: "linear", title: { display: true, text: "Voltage (V)" } }, y: { beginAtZero: true, title: { display: true, text: "Current (A)" } } } } });
-  pvChart = new Chart(document.getElementById("pvChart"), { type: "line", data: { datasets: [...pvLine, ...pvMpp] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: "linear", title: { display: true, text: "Voltage (V)" } }, y: { beginAtZero: true, title: { display: true, text: "Power (kW)" } } } } });
-}
-
-/* ─── Objective View ─── */
-function applyObjectiveView() {
-  if (!latestAnalysisData) return;
-  const mode = getObjectiveMode();
-  const ranked = rankRowsByObjective(getBaseRowsForRanking(latestAnalysisData), mode);
-  renderAnalysisSummary(latestAnalysisData, mode, ranked[0] || null);
-  renderRankingChart(ranked, mode);
-  renderTopTable(ranked.slice(0, 10), mode);
-}
-
-/* ─── Payload Builders ─── */
+/* ─── Fetching Logic ─── */
 function getBasePayload() {
-  const selectedDay = startDateInput.value || endDateInput.value;
-  endDateInput.value = selectedDay;
-  return { location: locationInput.value.trim(), startDate: selectedDay, endDate: selectedDay, timezone: REQUEST_TIMEZONE };
-}
-
-function getAlbedoMode() { return albedoModeSelect?.value === "sweep" ? "sweep" : "single"; }
-
-function applyAlbedoPreset() {
-  if (!albedoPresetSelect || !albedoSingleInput || getAlbedoMode() !== "single") return;
-  const v = albedoPresetSelect.value;
-  if (v === "custom") { albedoSingleInput.disabled = false; return; }
-  const n = Number(v);
-  if (Number.isFinite(n)) { albedoSingleInput.value = n.toFixed(2); albedoSingleInput.disabled = true; }
-  else albedoSingleInput.disabled = false;
-}
-
-function applyAlbedoMode() {
-  const sweep = getAlbedoMode() === "sweep";
-  setVisible(albedoPresetLabel, !sweep);
-  setVisible(albedoSingleLabel, !sweep);
-  setVisible(albedoMinLabel, sweep);
-  setVisible(albedoMaxLabel, sweep);
-  setVisible(albedoStepLabel, sweep);
-  if (!sweep) applyAlbedoPreset();
+    return {
+        location: locationInput.value || "Greater Noida",
+        date: startDateInput.value
+    };
 }
 
 function getRangesPayload() {
-  const albedo = getAlbedoMode() === "sweep"
-    ? { min: Number(albedoMinInput.value), max: Number(albedoMaxInput.value), step: Number(albedoStepInput.value) }
-    : (() => { const s = Number(albedoSingleInput.value); return { min: s, max: s, step: 0.01 }; })();
-  return {
-    heightCm: { min: Number(heightMinInput.value), max: Number(heightMaxInput.value), step: Number(heightStepInput.value) },
-    tiltDeg: { min: Number(tiltMinInput.value), max: Number(tiltMaxInput.value), step: Number(tiltStepInput.value) },
-    albedo
-  };
+    const albedo = (albedoModeSelect && albedoModeSelect.value === "sweep")
+      ? { min: Number(albedoMin.value), max: Number(albedoMax.value), step: Number(albedoStep.value) }
+      : (() => { const s = Number(albedoSingle.value); return { min: s, max: s, step: 0.01 }; })();
+    return {
+      heightCm: { min: Number(heightMin.value), max: Number(heightMax.value), step: Number(heightStep.value) },
+      tiltDeg: { min: Number(tiltMin.value), max: Number(tiltMax.value), step: Number(tiltStep.value) },
+      albedo
+    };
 }
 
-/* ─── API Calls ─── */
+
 async function postJson(url, body) {
-  const fullUrl = `${API_BASE_URL}${url}`;
-  let res;
-  try {
-    res = await fetch(fullUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  } catch (err) {
-    console.error("Network error during fetch", fullUrl, err);
-    throw new Error(`Network error contacting ${fullUrl}: ${err.message}`);
-  }
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const res = await fetch(fullUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Server fault: ${res.status}`);
+    }
+    const data = await res.json();
+    if (data.status === "error") throw new Error(data.message);
+    return data ? data.data : null;
+}
+  
 
-  const data = await res.json().catch(() => null);
-  if (!res.ok || (data && data.success === false)) {
-    throw new Error((data && data.message) || `Request failed (${res.status})`);
-  }
-  return data ? data.data : null;
+// ─── RENDERING ───
+
+function formatHourLabel(iso) {
+    if (!iso) return "";
+    return iso.substring(11, 16);
 }
 
-async function handleFetchIrradiance() {
-  try {
-    setBusy(true); setStatus("Fetching irradiance...");
-    const data = await postJson("/api/simulation/irradiance", getBasePayload());
-    setVisible(irradianceSection, true); setVisible(irradianceContent, true);
-    renderIrradianceSummary(data); renderIrradianceChart(data.hourly || []);
-    setStatus("Irradiance loaded.");
-  } catch (e) { setStatus(e.message, true); } finally { setBusy(false); }
+function renderIrradianceChart(hourly) {
+    if (!irradianceSection) return;
+    const ctx = document.getElementById("irradianceChart").getContext("2d");
+    if (irradianceChartInstance) irradianceChartInstance.destroy();
+  
+    const hours = hourly.map(p => formatHourLabel(p.time));
+    const ghi = hourly.map(p => p.ghiWhM2 ?? p.ghiWm2);
+    const dni = hourly.map(p => p.dniWm2);
+    const dhi = hourly.map(p => p.dhiWm2);
+  
+    irradianceChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: hours,
+        datasets: [
+          { label: 'GHI', data: ghi, borderColor: '#f5a623', backgroundColor: 'rgba(245, 166, 35, 0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 },
+          { label: 'DNI', data: dni, borderColor: '#00d4ff', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], tension: 0.1, pointRadius: 0 },
+          { label: 'DHI', data: dhi, borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, tension: 0.1, pointRadius: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } },
+        },
+        scales: {
+          x: { 
+            title: { display: true, text: 'Hour of Day (IST)', color: '#94a3b8' }, 
+            grid: { color: 'rgba(255,255,255,0.05)' } 
+          },
+          y: { 
+            title: { display: true, text: 'Irradiance (W/m²)', color: '#94a3b8' }, 
+            min: 0, 
+            grid: { color: 'rgba(255,255,255,0.05)' } 
+          }
+        }
+      }
+    });
+}
+  
+function renderIrradianceSummary(data) {
+    if (!irradianceSummary) return;
+    irradianceSummary.innerHTML = `
+      <div class="summary-item"><span class="k">Location</span><span class="v">${data.location?.name || "-"}</span></div>
+      <div class="summary-item"><span class="k">Total GHI</span><span class="v">${(data.daily?.ghiKWhM2Day || 0).toFixed(2)} kWh/m²</span></div>
+      <div class="summary-item"><span class="k">Data Points</span><span class="v">${data.points || "-"}</span></div>
+      <div class="summary-item"><span class="k">Elevation</span><span class="v">${Math.round(data.location?.elevation || 0)} m</span></div>
+    `;
+    if (csvLinkRow) {
+        csvLinkRow.innerHTML = data.csvUrl 
+            ? `NASA RAW DATA EXPORT: <a href="${data.csvUrl}" target="_blank" rel="noreferrer">DOWNLOAD CSV</a>` 
+            : "";
+    }
+}
+  
+function renderRankingChart(top10, obj, metricLabel) {
+    if (!document.getElementById("rankingChart")) return;
+    const ctx = document.getElementById("rankingChart").getContext("2d");
+    if (rankingChartInstance) rankingChartInstance.destroy();
+
+    rankingChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: top10.map((r,i) => `Rank ${i+1}`),
+        datasets: [{
+          label: metricLabel,
+          data: top10.map(r => {
+            if (obj === 'energy') return r.totalEnergyKWh;
+            if (obj === 'rearGain') return r.rearGainPercent;
+            if (obj === 'peakPower') return r.peakPowerKW;
+            return r.objectiveValue;
+          }),
+          backgroundColor: top10.map((_, i) => i === 0 ? '#f5a623' : '#00d4ff'),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { 
+            title: { display: true, text: metricLabel, color: '#94a3b8' },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            beginAtZero: true
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
 }
 
-async function handleRunAnalysis() {
-  try {
-    setBusy(true); setStatus("Running analysis...");
-    const data = await postJson("/api/simulation/analyze", { ...getBasePayload(), ranges: getRangesPayload(), useMatlab: useMatlabInput.checked, strictMatlab: strictMatlabInput.checked });
-    latestAnalysisData = data;
-    setVisible(analysisSection, true); setVisible(analysisContent, true);
-    renderIvPvCharts(data.ivPvCurves || []); applyObjectiveView();
-    setStatus(`Analysis done — ${data.engine || data.source}.`);
-  } catch (e) { setStatus(e.message, true); } finally { setBusy(false); }
+function renderIvPvCharts(curves) {
+    if (ivChartInstance) { ivChartInstance.destroy(); ivChartInstance = null; }
+    if (pvChartInstance) { pvChartInstance.destroy(); pvChartInstance = null; }
+    
+    if (!curves || curves.length === 0) return;
+    
+    // The backend provides curves in exactly the form needed.
+    const sel = curves.slice(0, 5); // Take top 5
+    const ivCtx = document.getElementById('ivChart')?.getContext('2d');
+    const pvCtx = document.getElementById('pvChart')?.getContext('2d');
+  
+    const colors = ['#f5a623', '#00d4ff', '#8b5cf6', '#a78bfa', '#fcd34d'];
+    const ivDatasets = [];
+    const pvDatasets = [];
+  
+    sel.forEach((c, idx) => {
+        const color = colors[idx % colors.length];
+        
+        // IV Line
+        ivDatasets.push({
+            label: `Rank ${c.energyRank}`,
+            data: (c.ivCurve || []).map(p => ({ x: p.voltageV, y: p.currentA })),
+            borderColor: color,
+            backgroundColor: 'transparent',
+            pointRadius: 0,
+            tension: 0.1,
+            borderWidth: 2
+        });
+        
+        // IV MPP
+        ivDatasets.push({
+            label: `R${c.energyRank} MPP`,
+            data: [{ x: c.estimatedParameters?.vmppV ?? 0, y: c.estimatedParameters?.imppA ?? 0 }],
+            type: 'scatter',
+            backgroundColor: '#fff',
+            borderColor: color,
+            pointBorderWidth: 2,
+            pointStyle: 'circle',
+            pointRadius: 6,
+            showLine: false
+        });
+
+        // PV Line
+        pvDatasets.push({
+            label: `Rank ${c.energyRank}`,
+            data: (c.pvCurve || []).map(p => ({ x: p.voltageV, y: p.powerKW })),
+            borderColor: color,
+            backgroundColor: idx === 0 ? 'rgba(245, 166, 35, 0.1)' : 'transparent',
+            pointRadius: 0,
+            tension: 0.1,
+            borderWidth: 2,
+            fill: idx === 0
+        });
+
+        // PV MPP
+        pvDatasets.push({
+            label: `R${c.energyRank} MPP`,
+            data: [{ x: c.estimatedParameters?.vmppV ?? 0, y: c.estimatedParameters?.pmppKW ?? 0 }],
+            type: 'scatter',
+            backgroundColor: '#fff',
+            borderColor: color,
+            pointBorderWidth: 2,
+            pointStyle: 'circle',
+            pointRadius: 6,
+            showLine: false
+        });
+    });
+  
+    if (ivCtx) {
+        ivChartInstance = new Chart(ivCtx, {
+            type: 'line',
+            data: { datasets: ivDatasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: true, labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } } },
+                scales: {
+                    x: { type: 'linear', title: { display: true, text: 'Voltage (V)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Current (A)', color: '#94a3b8' }, min: 0, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    }
+
+    if (pvCtx) {
+        pvChartInstance = new Chart(pvCtx, {
+            type: 'line',
+            data: { datasets: pvDatasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: true, labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } } },
+                scales: {
+                    x: { type: 'linear', title: { display: true, text: 'Voltage (V)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Power (kW)', color: '#94a3b8' }, min: 0, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    }
 }
 
-/* ─── Event Listeners ─── */
-fetchIrradianceBtn.addEventListener("click", handleFetchIrradiance);
-runAnalysisBtn.addEventListener("click", handleRunAnalysis);
-startDateInput.addEventListener("change", () => { endDateInput.value = startDateInput.value; });
-if (objectiveSelect) objectiveSelect.addEventListener("change", applyObjectiveView);
-if (albedoPresetSelect) albedoPresetSelect.addEventListener("change", applyAlbedoPreset);
-if (albedoModeSelect) albedoModeSelect.addEventListener("change", applyAlbedoMode);
 
-/* ─── Init ─── */
-locationInput.value = "Greater Noida";
-setInitialDates();
-applyAlbedoMode();
-applyAlbedoPreset();
-setVisible(irradianceSection, false);
-setVisible(analysisSection, false);
-setVisible(irradianceContent, false);
-setVisible(analysisContent, false);
+function getObjectiveMeta(mode) {
+    if (mode === "energy") return { prop: "totalEnergyKWh", label: "Max Energy", metricLabel: "Energy (kWh)", desc: true, digits: 2 };
+    if (mode === "rearGain") return { prop: "rearGainPercent", label: "Max Rear Gain", metricLabel: "Rear Gain (%)", desc: true, digits: 2 };
+    if (mode === "peakPower") return { prop: "peakPowerKW", label: "Max Peak Power", metricLabel: "Peak Power (kW)", desc: true, digits: 2 };
+    return { prop: "objectiveValue", label: "Balanced Score", metricLabel: "Balanced Score", desc: true, digits: 3 };
+}
+
+function getObjectiveMode() {
+    return objectiveSelect ? objectiveSelect.value : "energy";
+}
+
+function rankRowsByObjective(rows, mode) {
+    const list = [...rows];
+    if (mode === "balanced") {
+        list.forEach((r) => { r.objectiveValue = (r.totalEnergyKWh || 0) * (r.rearGainPercent || 0); });
+        list.sort((a, b) => b.objectiveValue - a.objectiveValue);
+    } else {
+        const meta = getObjectiveMeta(mode);
+        list.forEach((r) => { r.objectiveValue = r[meta.prop] || 0; });
+        list.sort((a, b) => (meta.desc ? b.objectiveValue - a.objectiveValue : a.objectiveValue - b.objectiveValue));
+    }
+    list.forEach((r, idx) => { r.rank = idx + 1; });
+    return list;
+}
+
+function getBaseRowsForRanking(data) {
+    if (!data) return [];
+    if (Array.isArray(data.results)) return data.results;
+    if (data.optimalConfiguration) return [data.optimalConfiguration];
+    return [];
+}
+  
+
+function renderAnalysisData(data, mode) {
+    if (!analysisSection) return;
+    
+    // Sort logic handled via applyObjectiveView -> rankRowsByObjective usually, 
+    // but just in case we are straight rendering:
+    const objMeta = getObjectiveMeta(mode);
+    const ranked = rankRowsByObjective(getBaseRowsForRanking(data), mode);
+    
+    analysisSection.classList.remove('is-hidden');
+    analysisContent.classList.remove('is-hidden');
+    
+    if (ranked.length === 0) {
+      if(analysisSummary) analysisSummary.innerHTML = '<p class="error cyan-text">No results returned from engine.</p>';
+      return;
+    }
+  
+    const top10 = ranked.slice(0, 10);
+    const best = top10[0];
+    
+    // Update Hero Banner directly
+    if (optimalConfigBanner) {
+        optimalConfigBanner.classList.remove('is-hidden');
+        document.getElementById('optHeight').textContent = `${best.heightCm ?? "-"} cm`;
+        document.getElementById('optTilt').textContent = `${best.tiltDeg ?? "-"}°`;
+        document.getElementById('optAlbedo').textContent = (best.albedo !== undefined) ? Number(best.albedo).toFixed(2) : "-";
+        document.getElementById('optMetricVal').textContent = `${Number(best.rearGainPercent || 0).toFixed(2)}%`;
+        document.getElementById('optMetricLbl').textContent = "REAR GAIN"; // Keep static as hero focus
+    }
+  
+    // Summary widgets below
+    if (analysisSummary) {
+        analysisSummary.innerHTML = `
+        <div class="summary-item"><span class="k">Eval Configs</span><span class="v">${data.combinationsTested || 1}</span></div>
+        <div class="summary-item"><span class="k">Peak Rear Gain</span><span class="v">${Number(best.rearGainPercent||0).toFixed(1)}%</span></div>
+        <div class="summary-item"><span class="k">Peak Energy</span><span class="v">${Number(best.totalEnergyKWh||0).toFixed(1)} kWh</span></div>
+        <div class="summary-item"><span class="k">Compute Engine</span><span class="v">${data.engine || data.source || '-'}</span></div>
+        `;
+    }
+
+    renderRankingChart(top10, mode, objMeta.metricLabel);
+    
+    // Table
+    if (topTableBody) {
+        if(objectiveMetricHeader) objectiveMetricHeader.textContent = objMeta.metricLabel;
+        topTableBody.innerHTML = '';
+        top10.forEach((r, idx) => {
+            const tr = document.createElement('tr');
+            if (idx === 0) tr.classList.add('rank-1-row');
+            
+            tr.innerHTML = `
+            <td>#${idx+1}</td>
+            <td>${r.heightCm}</td>
+            <td>${r.tiltDeg}</td>
+            <td>${Number(r.albedo||0).toFixed(2)}</td>
+            <td>${Number(r.totalEnergyKWh||0).toFixed(2)}</td>
+            <td>${Number(r.peakPowerKW||0).toFixed(2)}</td>
+            <td style="color:var(--amber); font-weight:bold;">${Number(r.rearGainPercent||0).toFixed(2)}%</td>
+            <td>${Number(r.objectiveValue||0).toFixed(objMeta.digits)}</td>
+            `;
+            topTableBody.appendChild(tr);
+        });
+    }
+
+    renderIvPvCharts(data.ivPvCurves || []);
+}
+
+
+function applyObjectiveView() {
+    if (!analysisResultsGlobal) return;
+    const mode = getObjectiveMode();
+    renderAnalysisData(analysisResultsGlobal, mode);
+}
+
+
+if (objectiveSelect) {
+    objectiveSelect.addEventListener("change", applyObjectiveView);
+}
+
+// ─── Button Actions ───
+  
+if (fetchIrradianceBtn) {
+    fetchIrradianceBtn.addEventListener('click', async () => {
+        setStatus('TELEMETRY: FETCHING NASA POWER...');
+        setLoading(true);
+        try {
+            const data = await postJson("/api/simulation/irradiance", getBasePayload());
+            if (irradianceSection) irradianceSection.classList.remove('is-hidden');
+            if (irradianceContent) irradianceContent.classList.remove('is-hidden');
+            renderIrradianceSummary(data); 
+            renderIrradianceChart(data.hourly || []);
+            setStatus("TELEMETRY: SUCCESS");
+        } catch (err) {
+            console.error(err);
+            setStatus(`SYSTEM FAULT: ${err.message}`, true);
+        } finally {
+            setLoading(false);
+        }
+    });
+}
+  
+if (runAnalysisBtn) {
+    runAnalysisBtn.addEventListener('click', async () => {
+        setStatus('ENGINE: RUNNING BIFACIAL OPTIMIZATION...');
+        setLoading(true);
+        if (optimalConfigBanner) optimalConfigBanner.classList.add("is-hidden"); // hide until ready
+
+        try {
+            const data = await postJson("/api/simulation/analyze", { 
+                ...getBasePayload(), 
+                ranges: getRangesPayload(), 
+                useMatlab: useMatlabInput?.checked || false, 
+                strictMatlab: strictMatlabInput?.checked || false 
+            });
+            analysisResultsGlobal = data; // Keep for sorting
+            applyObjectiveView();
+            setStatus(`ENGINE SUCCESS: OPTIMIZATION COMPLETE (${data.combinationsTested} passes).`);
+        } catch (err) {
+            console.error(err);
+            setStatus(`SYSTEM FAULT: ${err.message}`, true);
+        } finally {
+            setLoading(false);
+        }
+    });
+}

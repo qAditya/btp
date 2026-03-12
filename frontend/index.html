@@ -1,181 +1,193 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bifacial PV Optimizer</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
 
+  <!-- Loading State Overlay -->
+  <div id="loadingOverlay" class="loading-overlay is-hidden">
+    <div class="loader-container">
+      <div class="sun-rays"></div>
+      <div class="solar-panel-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zM6 6v12h12V6M8 8h3v3H8M13 8h3v3h-3M8 13h3v3H8M13 13h3v3h-3"/></svg>
+      </div>
+    </div>
+    <div class="loading-text">PROCESSING TELEMETRY...</div>
+  </div>
+
   <!-- Header -->
-  <header class="header" style="position: relative; overflow: hidden;">
-    <div class="hero-sun"></div>
-    <div class="container header-inner" style="position: relative; z-index: 10;">
-      <h1>Bifacial PV Optimizer</h1>
-      <p class="subtitle">24-hour bifacial simulation · NASA POWER</p>
+  <header class="header">
+    <div class="header-bg-wave"></div>
+    <div class="container header-inner">
+      <h1>☀ Bifacial PV Optimizer</h1>
+      <p class="subtitle">NASA POWER · Advanced View Factor · BTP-1 Model</p>
     </div>
   </header>
 
   <main class="container">
 
-    <!-- Location & Date -->
-    <section class="card">
-      <div class="card-header"><h2>📍 Location &amp; Date</h2></div>
-      <div class="grid cols-3">
-        <label>
-          <span class="label-text">Location</span>
-          <input id="locationInput" type="text" placeholder="e.g. Greater Noida">
-        </label>
-        <label>
-          <span class="label-text">Simulation Day (IST)</span>
-          <input id="startDateInput" type="date">
-        </label>
-        <label>
-          <span class="label-text">End Date (auto)</span>
-          <input id="endDateInput" type="date" disabled>
-        </label>
-      </div>
-    </section>
-
-    <!-- Sweep Parameters -->
-    <section class="card">
-      <div class="card-header"><h2>⚙️ Sweep Parameters</h2></div>
-
-      <div class="param-group">
-        <h3 class="param-title">Panel Height</h3>
-        <div class="grid cols-3">
-          <label><span class="label-text">Min (cm)</span><input id="heightMin" type="number" value="50"></label>
-          <label><span class="label-text">Max (cm)</span><input id="heightMax" type="number" value="450"></label>
-          <label><span class="label-text">Step (cm)</span><input id="heightStep" type="number" value="50"></label>
-        </div>
-        <p class="hint">Recommended sweep: 0.5 m to 4.5 m (50‑450 cm) with 0.5 m steps. This range captures the peak rear‑gain region (~1 m clearance) and the subsequent diminishing returns at greater heights.</p>
-      </div>
-
-      <div class="param-group">
-        <h3 class="param-title">Tilt Angle</h3>
-        <div class="grid cols-3">
-          <label><span class="label-text">Min (°)</span><input id="tiltMin" type="number" value="10"></label>
-          <label><span class="label-text">Max (°)</span><input id="tiltMax" type="number" value="50"></label>
-          <label><span class="label-text">Step (°)</span><input id="tiltStep" type="number" value="10"></label>
-        </div>
-      </div>
-
-
-      <div class="param-group">
-        <h3 class="param-title">Ground Albedo</h3>
-        <div class="grid cols-3">
-          <label>
-            <span class="label-text">Mode</span>
-            <select id="albedoModeSelect">
-              <option value="single">Single Value (Recommended)</option>
-              <option value="sweep">Sweep Range</option>
-            </select>
+    <div class="mission-grid">
+      <!-- Location & Date -->
+      <section class="card panel-location">
+        <div class="card-header"><h2 class="glow-text">📍 Location &amp; Date</h2></div>
+        <div class="form-grid layout-vertical">
+          <label class="glow-input-wrap">
+            <span class="label-text">Site Coordinates / City</span>
+            <div class="input-with-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+              <input id="locationInput" type="text" placeholder="e.g. Greater Noida" class="tech-input">
+            </div>
           </label>
-          <label id="albedoPresetLabel">
-            <span class="label-text">Surface Preset</span>
-            <select id="albedoPresetSelect">
-              <option value="custom">Custom</option>
-              <option value="0.20">Grass (0.20)</option>
-              <option value="0.26">Fresh grass (0.26)</option>
-              <option value="0.30">Concrete (0.30)</option>
-              <option value="0.18">Urban (0.18)</option>
-              <option value="0.12">Dry asphalt (0.12)</option>
-              <option value="0.33">Red tiles (0.33)</option>
-              <option value="0.82">Fresh snow (0.82)</option>
-              <option value="0.65">Wet snow (0.65)</option>
-              <option value="0.85">Aluminum (0.85)</option>
-              <option value="0.35">Galvanized steel (0.35)</option>
-            </select>
+          <label class="glow-input-wrap">
+            <span class="label-text">Simulation Day (IST)</span>
+            <input id="startDateInput" type="date" class="tech-input date-picker">
           </label>
-          <label id="albedoSingleLabel">
-            <span class="label-text">Albedo</span>
-            <input id="albedoSingle" type="number" value="0.2" step="0.01" min="0.05" max="0.95">
-          </label>
-          <label id="albedoMinLabel" class="is-hidden">
-            <span class="label-text">Min</span>
-            <input id="albedoMin" type="number" value="0.2" step="0.01">
-          </label>
-          <label id="albedoMaxLabel" class="is-hidden">
-            <span class="label-text">Max</span>
-            <input id="albedoMax" type="number" value="0.6" step="0.01">
-          </label>
-          <label id="albedoStepLabel" class="is-hidden">
-            <span class="label-text">Step</span>
-            <input id="albedoStep" type="number" value="0.1" step="0.01">
+          <label class="glow-input-wrap is-hidden">
+            <span class="label-text">End Date (auto)</span>
+            <input id="endDateInput" type="date" disabled class="tech-input">
           </label>
         </div>
-      </div>
+      </section>
 
-      <p class="hint">Rear gain peaks near 1 m clearance and declines at greater heights (view-factor effect).</p>
+      <!-- Sweep Parameters -->
+      <section class="card panel-sweep">
+        <div class="card-header"><h2 class="glow-text">⚙ Sweep Parameters</h2></div>
 
-      <div class="grid cols-2 mt-sm">
-        <label class="checkbox"><input id="useMatlabInput" type="checkbox"><span>Use MATLAB engine</span></label>
-        <label class="checkbox"><input id="strictMatlabInput" type="checkbox"><span>Strict MATLAB (no JS fallback)</span></label>
-      </div>
+        <div class="param-group tech-border">
+          <h3 class="param-title cyan-text">Panel Height (cm)</h3>
+          <div class="grid cols-3 param-inputs">
+            <label><span class="label-text">Min</span><input id="heightMin" type="number" value="50" class="tech-input"></label>
+            <label><span class="label-text">Max</span><input id="heightMax" type="number" value="450" class="tech-input"></label>
+            <label><span class="label-text">Step</span><input id="heightStep" type="number" value="50" class="tech-input"></label>
+          </div>
+          <input type="range" class="tech-slider amber-slider" disabled>
+        </div>
 
-      <div class="actions">
-        <button id="fetchIrradianceBtn" type="button" class="btn btn-primary">Fetch Irradiance</button>
-        <button id="runAnalysisBtn" type="button" class="btn btn-accent">Run Analysis</button>
+        <div class="param-group tech-border">
+          <h3 class="param-title cyan-text">Tilt Angle (°)</h3>
+          <div class="grid cols-3 param-inputs">
+            <label><span class="label-text">Min</span><input id="tiltMin" type="number" value="10" class="tech-input"></label>
+            <label><span class="label-text">Max</span><input id="tiltMax" type="number" value="50" class="tech-input"></label>
+            <label><span class="label-text">Step</span><input id="tiltStep" type="number" value="10" class="tech-input"></label>
+          </div>
+          <input type="range" class="tech-slider amber-slider" disabled>
+        </div>
+        
+        <div class="grid cols-2 mt-sm tech-toggles">
+          <label class="toggle-switch">
+             <input id="useMatlabInput" type="checkbox">
+             <span class="slider"></span>
+             <span class="toggle-label">MATLAB Engine</span>
+          </label>
+          <label class="toggle-switch">
+             <input id="strictMatlabInput" type="checkbox">
+             <span class="slider"></span>
+             <span class="toggle-label">Strict MATLAB Mode</span>
+          </label>
+        </div>
+
+      </section>
+    </div> <!-- end mission grid -->
+
+    <!-- Ground Albedo -->
+    <section class="card panel-albedo mt-md">
+      <div class="card-header"><h2 class="glow-text">🌍 Ground Albedo Selection</h2></div>
+      <div class="albedo-layout">
+        <div class="albedo-controls">
+            <label class="glow-input-wrap">
+              <span class="label-text">Mode</span>
+              <select id="albedoModeSelect" class="tech-input">
+                <option value="single">Single Value</option>
+                <option value="sweep">Sweep Range</option>
+              </select>
+            </label>
+            
+            <label id="albedoPresetLabel" class="glow-input-wrap">
+              <span class="label-text">Surface Preset</span>
+              <select id="albedoPresetSelect" class="tech-input disabled-visually">
+                <option value="custom">Custom</option>
+                <option value="0.20">Grass</option>
+                <option value="0.26">Fresh grass</option>
+                <option value="0.30">Concrete</option>
+                <option value="0.18">Urban</option>
+                <option value="0.12">Dry asphalt</option>
+                <option value="0.33">Red tiles</option>
+                <option value="0.82">Fresh snow</option>
+                <option value="0.65">Wet snow</option>
+                <option value="0.85">Aluminum</option>
+                <option value="0.35">Galvanized steel</option>
+              </select>
+            </label>
+
+            <!-- Grid of visual tiles replacing the dropdown interaction -->
+            <div id="albedoTiles" class="albedo-tiles-grid">
+               <div class="albedo-tile" data-val="0.20">🌱 Grass <br><span class="num">0.20</span></div>
+               <div class="albedo-tile" data-val="0.30">🧱 Concrete <br><span class="num">0.30</span></div>
+               <div class="albedo-tile" data-val="0.82">❄️ Snow <br><span class="num">0.82</span></div>
+               <div class="albedo-tile" data-val="0.12">🛣️ Asphalt <br><span class="num">0.12</span></div>
+               <div class="albedo-tile active" data-val="custom">⚙️ Custom</div>
+            </div>
+
+            <div id="albedoSingleLabel" class="glow-input-wrap mt-sm text-center single-val-container">
+              <span class="label-text">Custom Albedo (0-1)</span>
+              <input id="albedoSingle" type="number" value="0.2" step="0.01" min="0.05" max="0.95" class="tech-input massive-number">
+            </div>
+
+            <div id="albedoMinLabel" class="glow-input-wrap is-hidden mt-sm"><span class="label-text">Min</span><input id="albedoMin" type="number" value="0.2" step="0.01" class="tech-input"></div>
+            <div id="albedoMaxLabel" class="glow-input-wrap is-hidden mt-sm"><span class="label-text">Max</span><input id="albedoMax" type="number" value="0.6" step="0.01" class="tech-input"></div>
+            <div id="albedoStepLabel" class="glow-input-wrap is-hidden mt-sm"><span class="label-text">Step</span><input id="albedoStep" type="number" value="0.1" step="0.01" class="tech-input"></div>
+        </div>
       </div>
-      <p id="statusText" class="status">Ready</p>
     </section>
 
-    <!-- Model Formulas -->
-    <section class="card">
-      <div class="card-header"><h2>📐 Model Formulas</h2></div>
-      <div class="formula-list">
-        <p><strong>Front irradiance</strong> (equator‑facing, Liu‑Jordan isotropic):</p>
-        <pre>beam_tilted = DNI × max(0, cos I)
-sky_vf = (1 + cos β)/2
-gnd_vf = (1 − cos β)/2
-ghi_diffuse = GHI × kd
-front = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf</pre>
-        <p><strong>Rear irradiance</strong> (BTP‑2, Yusufoglu et al. 2014, Eq. 9):</p>
-        <pre>rear_vf = (1 + cos β)/2
-E_rear = α×DHI×rear_vf + α×(GHI−DHI)×(rear_vf − F_V)
-rear_effective = E_rear × bifaciality</pre>
-        <p><strong>Shadow View Factor (F<sub>V</sub>)</strong>:</p>
-        <pre>γ_profile = atan(tan(sun_elev) / cos(sun_az − panel_az))
-shadow_lower = h / tan(γ_profile)
-shadow_upper = (h + W·sin β) / tan(γ_profile)
-F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
-        <p>F<sub>V</sub> accounts for the module's own shadow blocking direct ground reflection.
-           Solar azimuth is computed analytically from site coordinates.</p>
-        <p><strong>Total effective</strong> = front + rear (≥0). No temperature correction applied.</p>
-      </div>
-    </section>
-
-    <!-- Geometry Diagram -->
-    <section class="card">
-      <div class="card-header"><h2>🔭 Bifacial Panel Geometry & Radiation Components</h2></div>
-      <!-- simplified: use provided image file -->
-      <img src="images/image.png" alt="Bifacial geometry" style="max-width:100%; border:1px solid #ddd; border-radius:4px;" />
-    </section>
+    <!-- Action Bar -->
+    <div class="actions dashboard-actions">
+      <button id="fetchIrradianceBtn" type="button" class="btn btn-outline-cyan glow-hover">FETCH IRRADIANCE</button>
+      <button id="runAnalysisBtn" type="button" class="btn btn-primary-amber glow-pulse">RUN ANALYSIS</button>
+    </div>
+    <div class="terminal-status-wrap">
+      <span class="prompt">></span> <span id="statusText" class="status terminal-text">SYSTEM READY</span><span class="cursor-blink">_</span>
+    </div>
 
     <!-- Irradiance Results -->
-    <section id="irradianceSection" class="card is-hidden">
-      <div class="card-header"><h2>☀️ Irradiance Data</h2></div>
+    <section id="irradianceSection" class="card is-hidden dashboard-panel">
+      <div class="card-header"><h2 class="glow-text cyan-text">NASA POWER TELEMETRY</h2></div>
       <div id="irradianceContent" class="result-content is-hidden">
-        <div id="irradianceSummary" class="summary"></div>
-        <div class="chart-wrap"><canvas id="irradianceChart"></canvas></div>
+        <div id="irradianceSummary" class="summary hardware-readouts"></div>
+        <div class="chart-wrap tech-chart-bg"><canvas id="irradianceChart"></canvas></div>
         <p id="csvLinkRow" class="csv-row"></p>
       </div>
     </section>
 
     <!-- Analysis Results -->
-    <section id="analysisSection" class="card is-hidden">
-      <div class="card-header"><h2>📊 Analysis Results</h2></div>
+    <section id="analysisSection" class="card is-hidden dashboard-panel">
+      <div class="card-header"><h2 class="glow-text amber-text">OPTIMIZATION ENGINE RESULTS</h2></div>
+      
+      <!-- Optimal Config Hero Banner dynamically populated via JS, but we place it up top -->
+      <div id="optimalConfigBanner" class="optimal-banner is-hidden">
+        <h3 class="banner-title">OPTIMAL CONFIGURATION DETECTED</h3>
+        <div class="banner-grid">
+           <div class="b-stat"><span class="b-lbl">HEIGHT</span><span class="b-val" id="optHeight">-</span></div>
+           <div class="b-stat"><span class="b-lbl">TILT</span><span class="b-val" id="optTilt">-</span></div>
+           <div class="b-stat"><span class="b-lbl">ALBEDO</span><span class="b-val" id="optAlbedo">-</span></div>
+           <div class="b-stat highlight"><span class="b-lbl" id="optMetricLbl">REAR GAIN</span><span class="b-val glowing" id="optMetricVal">-</span></div>
+        </div>
+      </div>
+
       <div id="analysisContent" class="result-content is-hidden">
-        <div id="analysisSummary" class="summary"></div>
+        <div id="analysisSummary" class="summary hardware-readouts"></div>
         <div class="inline-controls">
-          <label>
-            <span class="label-text">Ranking Objective</span>
-            <select id="objectiveSelect">
+          <label class="glow-input-wrap">
+            <span class="label-text">Optimization Objective</span>
+            <select id="objectiveSelect" class="tech-input">
               <option value="energy">Max Energy (kWh)</option>
               <option value="rearGain">Max Rear Gain (%)</option>
               <option value="balanced">Balanced</option>
@@ -183,13 +195,17 @@ F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
             </select>
           </label>
         </div>
-        <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
-        <h3>🔘 I-V Curves (Top Configurations)</h3>
-        <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
-        <h3>⚡ P-V Curves (Top Configurations)</h3>
-        <div class="chart-wrap"><canvas id="pvChart"></canvas></div>
-        <div class="table-wrap">
-          <table id="topTable">
+
+        <div class="chart-wrap tech-chart-bg"><canvas id="rankingChart"></canvas></div>
+        
+        <h3 class="chart-title">I-V Curves [Top Configurations]</h3>
+        <div class="chart-wrap tech-chart-bg"><canvas id="ivChart"></canvas></div>
+        
+        <h3 class="chart-title">P-V Curves [Top Configurations]</h3>
+        <div class="chart-wrap tech-chart-bg"><canvas id="pvChart"></canvas></div>
+        
+        <div class="table-wrap tech-table-wrap">
+          <table id="topTable" class="tech-table">
             <thead>
               <tr>
                   <th>Rank</th>
@@ -208,12 +224,42 @@ F_V = rear_vf − ∫[shadow] cos θ₁·cos θ₂ / (2·r) dx</pre>
       </div>
     </section>
 
+    <!-- Model Formulas -->
+    <section class="card panel-code">
+      <div class="card-header">
+        <h2 class="glow-text cyan-text">BTP-1 Calculation Engine</h2>
+        <label class="toggle-switch small-toggle">
+           <input type="checkbox" id="advancedViewFactorToggle" checked>
+           <span class="slider cyan-slider"></span>
+           <span class="toggle-label cyan-text">Advanced View Factor Module</span>
+        </label>
+      </div>
+      <div class="formula-list code-block">
+        <p class="comment">// Front irradiance (equator-facing, Liu-Jordan isotropic):</p>
+        <pre><span class="var">beam_tilted</span> <span class="op">=</span> <span class="var">DNI</span> <span class="op">*</span> max(<span class="num">0</span>, cos <span class="var">I</span>)
+<span class="var">sky_vf</span> <span class="op">=</span> (<span class="num">1</span> <span class="op">+</span> cos <span class="var">β</span>)/<span class="num">2</span>
+<span class="var">gnd_vf</span> <span class="op">=</span> (<span class="num">1</span> <span class="op">-</span> cos <span class="var">β</span>)/<span class="num">2</span>
+<span class="var">ghi_diffuse</span> <span class="op">=</span> <span class="var">GHI</span> <span class="op">*</span> <span class="var">kd</span>
+<span class="var">front</span> <span class="op">=</span> <span class="var">beam_tilted</span> <span class="op">+</span> <span class="var">ghi_diffuse</span><span class="op">*</span><span class="var">sky_vf</span> <span class="op">+</span> <span class="var">GHI</span><span class="op">*</span><span class="var">albedo</span><span class="op">*</span><span class="var">gnd_vf</span></pre>
+        
+        <div id="vfDynamicFormulas">
+          <p class="comment">// Rear irradiance (BTP-1, Yusufoglu et al. 2014) with dynamic solar geometry:</p>
+          <pre><span class="var">γ_profile</span> <span class="op">=</span> atan(tan(<span class="var">sun_elev</span>) <span class="op">/</span> cos(<span class="var">sun_az</span> <span class="op">-</span> <span class="var">panel_az</span>))
+<span class="var">shadow_lower</span> <span class="op">=</span> <span class="var">h</span> <span class="op">/</span> tan(<span class="var">γ_profile</span>)
+<span class="var">F_V</span> <span class="op">=</span> <span class="var">rear_vf</span> <span class="op">-</span> ∫[<span class="var">shadow</span>] cos <span class="var">θ₁</span> * cos <span class="var">θ₂</span> <span class="op">/</span> (<span class="num">2</span>*<span class="var">r</span>) dx
+<span class="var">E_rear</span> <span class="op">=</span> α*<span class="var">DHI</span>*<span class="var">rear_vf</span> <span class="op">+</span> α*(<span class="var">GHI</span>-<span class="var">DHI</span>)*(<span class="var">rear_vf</span> <span class="op">-</span> <span class="var">F_V</span>)</pre>
+        </div>
+        
+        <p class="comment">// Total Output</p>
+        <pre><span class="var">total_effective</span> <span class="op">=</span> <span class="var">front</span> <span class="op">+</span> (<span class="var">E_rear</span> <span class="op">*</span> <span class="var">bifaciality</span>)</pre>
+      </div>
+    </section>
 
   </main>
 
-  <footer class="footer">
+  <footer class="footer tech-footer">
     <div class="container">
-      <p>BTP Project · NASA POWER API</p>
+      <p>BTP SYNTHESIS V1.0 · NASA POWER TELEMETRY SYS</p>
     </div>
   </footer>
 
