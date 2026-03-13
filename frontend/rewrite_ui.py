@@ -18,7 +18,7 @@ new_hero = """<!-- Header / Hero -->
         </div>
         <div>
           <h1 class="hero-title">Bifacial PV Optimizer</h1>
-          <p class="subtitle hero-subtitle">24-hour bifacial simulation &middot; NASA POWER &middot; BTP-2 Model</p>
+          <p class="subtitle hero-subtitle">24-hour bifacial simulation &middot; NASA POWER &middot; Advanced View-Factor Model</p>
         </div>
       </div>
       <div class="hero-visual animate-on-scroll">

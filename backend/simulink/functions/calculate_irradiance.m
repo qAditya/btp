@@ -1,8 +1,8 @@
 function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
-        GHI, Tilt, Height_cm, Albedo, Bifaciality, Latitude, Longitude, HourUTC, DayOfYear, PanelWidthM)
+    GHI, Tilt, Height_cm, Albedo, Bifaciality, Latitude, Longitude, HourUTC, DayOfYear, PanelWidthM, PanelAzimuthDeg, RearStructureLossFraction)
     % calculate_irradiance
-    % Physics-based bifacial irradiance model using BTP-2 (Yusufoglu et al.)
-    % rear irradiance equation with geometric shadow view factor F_V.
+    % Physics-based bifacial irradiance model.
+    % Rear irradiance uses geometric shadow view factor F_V.
     %
     % Uses Liu-Jordan isotropic transposition for front,
     % Erbs (1982) diffuse-fraction decomposition,
@@ -26,6 +26,14 @@ function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
     if nargin < 8  || isempty(HourUTC),       HourUTC       = 12;     end
     if nargin < 9  || isempty(DayOfYear),     DayOfYear     = 172;    end
     if nargin < 10 || isempty(PanelWidthM),   PanelWidthM   = 1.134;  end
+    if nargin < 11 || isempty(PanelAzimuthDeg)
+        if Latitude >= 0
+            PanelAzimuthDeg = 180;
+        else
+            PanelAzimuthDeg = 0;
+        end
+    end
+    if nargin < 12 || isempty(RearStructureLossFraction), RearStructureLossFraction = 0.08; end
 
     if GHI <= 0
         G_effective = 0; G_front = 0; G_rear_effective = 0;
@@ -66,12 +74,7 @@ function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
             sun_az_rad = sun_az_rad + 2*pi;
         end
     end
-    % Panel azimuth: equator-facing
-    if Latitude >= 0
-        panel_az_rad = pi;   % south
-    else
-        panel_az_rad = 0;    % north
-    end
+    panel_az_rad = deg2rad(mod(PanelAzimuthDeg, 360));
 
     % --- Erbs decomposition: GHI -> beam + diffuse ---
     GSC   = 1361;
@@ -93,13 +96,9 @@ function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
     GHI_beam = max(0, GHI - GHI_diff);
     DNI      = GHI_beam / max(cos_zenith, 0.01);
 
-    % --- Front irradiance: equator-facing AOI + Liu-Jordan isotropic ---
-    if Latitude >= 0
-        eff_lat = Latitude - Tilt;
-    else
-        eff_lat = Latitude + Tilt;
-    end
-    cos_AOI = sind(dec)*sind(eff_lat) + cosd(dec)*cosd(eff_lat)*cosd(ha);
+    % --- Front irradiance: generalized AOI + Liu-Jordan isotropic ---
+    sin_zenith = sqrt(max(0, 1 - cos_zenith^2));
+    cos_AOI = cos_zenith * cos(beta_rad) + sin_zenith * sin(beta_rad) * cos(sun_az_rad - panel_az_rad);
 
     beam_tilted       = DNI * max(0, cos_AOI);
     sky_vf            = (1 + cos(beta_rad)) / 2;
@@ -108,7 +107,7 @@ function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
     ground_refl_front = GHI * Albedo * gnd_vf;
     G_front           = max(0, beam_tilted + diffuse_tilted + ground_refl_front);
 
-    % --- Rear irradiance: BTP-2 Equation 9 (Yusufoglu et al. 2014) ---
+    % --- Rear irradiance with geometric shadow attenuation ---
     %   E_rear = alpha*DHI*(1+cos(beta))/2 + alpha*(GHI-DHI)*((1+cos(beta))/2 - F_V)
     %   F_V = shadow view factor from 2D geometry + numerical integration
     height_m = Height_cm / 100;
@@ -119,7 +118,8 @@ function [G_effective, G_front, G_rear_effective] = calculate_irradiance( ...
 
     rear_diffuse_comp = Albedo * GHI_diff * rear_vf;
     rear_direct_comp  = Albedo * GHI_beam * max(0, rear_vf - F_V);
-    G_rear_effective  = max(0, (rear_diffuse_comp + rear_direct_comp) * Bifaciality);
+    structure_factor = max(0, min(1, 1 - RearStructureLossFraction));
+    G_rear_effective  = max(0, (rear_diffuse_comp + rear_direct_comp) * Bifaciality * structure_factor);
 
     G_effective = max(0, G_front + G_rear_effective);
 end

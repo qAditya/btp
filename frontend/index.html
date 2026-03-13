@@ -28,7 +28,7 @@
     <div class="header-bg-wave"></div>
     <div class="container header-inner">
       <h1>☀ Bifacial PV Optimizer</h1>
-      <p class="subtitle">NASA POWER · Advanced View Factor · BTP-1 Model</p>
+      <p class="subtitle">NASA POWER · Advanced View Factor · Bifacial Simulation Platform</p>
     </div>
   </header>
 
@@ -79,6 +79,16 @@
             <label><span class="label-text">Step</span><input id="tiltStep" type="number" value="10" class="tech-input"></label>
           </div>
           <input type="range" class="tech-slider amber-slider" disabled>
+        </div>
+
+        <div class="param-group tech-border">
+          <h3 class="param-title cyan-text">Array Azimuth (°)</h3>
+          <div class="grid cols-1 param-inputs">
+            <label>
+              <span class="label-text">Orientation (0-360, clockwise from North)</span>
+              <input id="azimuthDegInput" type="number" value="180" min="0" max="360" step="1" class="tech-input">
+            </label>
+          </div>
         </div>
         
         <div class="grid cols-2 mt-sm tech-toggles">
@@ -151,8 +161,38 @@
     <!-- Action Bar -->
     <div class="actions dashboard-actions">
       <button id="fetchIrradianceBtn" type="button" class="btn btn-outline-cyan glow-hover">FETCH IRRADIANCE</button>
-      <button id="runAnalysisBtn" type="button" class="btn btn-primary-amber glow-pulse">RUN ANALYSIS</button>
+      <button id="runAnalysisBtn" type="button" class="btn btn-primary-amber glow-pulse">RUN GLOBAL ANALYSIS</button>
     </div>
+    
+    <!-- INDEPENDENT SCENARIO ANALYSIS SECTION -->
+     <section class="card dashboard-panel mt-md">
+       <div class="card-header"><h3 class="glow-text amber-text">SCENARIO VARIATION</h3></div>
+       <div class="scenario-panel" style="padding: 16px; border: 1px dashed var(--cyan-dark); background: rgba(0,0,0,0.2);">
+          <p style="color: #94a3b8; margin-bottom: 12px; font-size: 0.9em;">
+             Run independent variations with user-defined fixed baseline values.
+          </p>
+          <div class="grid cols-3" style="margin-bottom: 12px;">
+            <label class="glow-input-wrap">
+              <span class="label-text">Fixed Tilt (deg)</span>
+              <input id="scenarioFixedTilt" type="number" value="20" min="0" max="85" step="1" class="tech-input">
+            </label>
+            <label class="glow-input-wrap">
+              <span class="label-text">Fixed Height (cm)</span>
+              <input id="scenarioFixedHeight" type="number" value="100" min="10" max="500" step="1" class="tech-input">
+            </label>
+            <label class="glow-input-wrap">
+              <span class="label-text">Fixed Albedo</span>
+              <input id="scenarioFixedAlbedo" type="number" value="0.18" min="0.05" max="0.95" step="0.01" class="tech-input">
+            </label>
+          </div>
+          <div class="actions" style="justify-content: flex-start; gap: 12px;">
+             <button id="varyAlbedoBtn" class="btn btn-outline-cyan glow-hover">VARY ALBEDO</button>
+             <button id="varyHeightBtn" class="btn btn-outline-cyan glow-hover">VARY HEIGHT</button>
+             <button id="varyTiltBtn" class="btn btn-outline-cyan glow-hover">VARY TILT</button>
+          </div>
+       </div>
+    </section>
+
     <div class="terminal-status-wrap">
       <span class="prompt">></span> <span id="statusText" class="status terminal-text">SYSTEM READY</span><span class="cursor-blink">_</span>
     </div>
@@ -181,6 +221,47 @@
            <div class="b-stat highlight"><span class="b-lbl" id="optMetricLbl">REAR GAIN</span><span class="b-val glowing" id="optMetricVal">-</span></div>
         </div>
       </div>
+      
+      <!-- Sweep Result Modal -->
+      <dialog id="sweepModal" class="tech-modal">
+        <div class="modal-content card">
+           <div class="card-header flex-between">
+              <h2 id="sweepModalTitle" class="glow-text">Parameter Sweep</h2>
+              <button id="closeModalBtn" class="btn-close">×</button>
+           </div>
+           <div class="modal-body">
+              <div class="inline-controls" style="margin-bottom: 10px;">
+               <label class="glow-input-wrap">
+                <span class="label-text">Scenario Metric</span>
+                <select id="sweepMetricSelect" class="tech-input">
+                  <option value="rearShare">Rear Share of Effective Irradiance (%)</option>
+                  <option value="uplift">Bifacial Uplift vs Front-only (%)</option>
+                </select>
+               </label>
+              </div>
+              <div class="chart-wrap tech-chart-bg">
+                 <canvas id="sweepChart"></canvas>
+              </div>
+              <div id="sweepAssumptions" class="text-center mt-sm text-muted"></div>
+              <div id="sweepSummary" class="text-center mt-sm text-muted"></div>
+              
+              <div class="table-wrap tech-table-wrap mt-md">
+                 <h4 class="param-title cyan-text">Top 5 Variations</h4>
+                 <table id="sweepTable" class="tech-table">
+                    <thead>
+                       <tr>
+                          <th>Rank</th>
+                          <th id="sweepParamHeader">Parameter</th>
+                      <th id="sweepMetricHeader">Rear Share of Effective Irradiance (%)</th>
+                          <th>Energy (kWh)</th>
+                       </tr>
+                    </thead>
+                    <tbody></tbody>
+                 </table>
+              </div>
+           </div>
+        </div>
+      </dialog>
 
       <div id="analysisContent" class="result-content is-hidden">
         <div id="analysisSummary" class="summary hardware-readouts"></div>
@@ -227,7 +308,7 @@
     <!-- Model Formulas -->
     <section class="card panel-code">
       <div class="card-header">
-        <h2 class="glow-text cyan-text">BTP-1 Calculation Engine</h2>
+        <h2 class="glow-text cyan-text">Calculation Engine</h2>
         <label class="toggle-switch small-toggle">
            <input type="checkbox" id="advancedViewFactorToggle" checked>
            <span class="slider cyan-slider"></span>
@@ -235,7 +316,7 @@
         </label>
       </div>
       <div class="formula-list code-block">
-        <p class="comment">// Front irradiance (equator-facing, Liu-Jordan isotropic):</p>
+        <p class="comment">// Front irradiance (tilted plane, Liu-Jordan isotropic):</p>
         <pre><span class="var">beam_tilted</span> <span class="op">=</span> <span class="var">DNI</span> <span class="op">*</span> max(<span class="num">0</span>, cos <span class="var">I</span>)
 <span class="var">sky_vf</span> <span class="op">=</span> (<span class="num">1</span> <span class="op">+</span> cos <span class="var">β</span>)/<span class="num">2</span>
 <span class="var">gnd_vf</span> <span class="op">=</span> (<span class="num">1</span> <span class="op">-</span> cos <span class="var">β</span>)/<span class="num">2</span>
@@ -243,7 +324,7 @@
 <span class="var">front</span> <span class="op">=</span> <span class="var">beam_tilted</span> <span class="op">+</span> <span class="var">ghi_diffuse</span><span class="op">*</span><span class="var">sky_vf</span> <span class="op">+</span> <span class="var">GHI</span><span class="op">*</span><span class="var">albedo</span><span class="op">*</span><span class="var">gnd_vf</span></pre>
         
         <div id="vfDynamicFormulas">
-          <p class="comment">// Rear irradiance (BTP-1, Yusufoglu et al. 2014) with dynamic solar geometry:</p>
+          <p class="comment">// Rear irradiance with dynamic solar geometry:</p>
           <pre><span class="var">γ_profile</span> <span class="op">=</span> atan(tan(<span class="var">sun_elev</span>) <span class="op">/</span> cos(<span class="var">sun_az</span> <span class="op">-</span> <span class="var">panel_az</span>))
 <span class="var">shadow_lower</span> <span class="op">=</span> <span class="var">h</span> <span class="op">/</span> tan(<span class="var">γ_profile</span>)
 <span class="var">F_V</span> <span class="op">=</span> <span class="var">rear_vf</span> <span class="op">-</span> ∫[<span class="var">shadow</span>] cos <span class="var">θ₁</span> * cos <span class="var">θ₂</span> <span class="op">/</span> (<span class="num">2</span>*<span class="var">r</span>) dx
@@ -255,11 +336,41 @@
       </div>
     </section>
 
+    <section class="card panel-key-figures">
+      <div class="card-header">
+        <h2 class="glow-text cyan-text">Key Research Figures</h2>
+      </div>
+      <p class="key-figures-intro">
+        Image 1 and Image 2 are the visual backbone of this project. These references explain the model context and expected behavior at a glance.
+      </p>
+      <div class="key-figures-grid">
+        <figure class="key-figure-card float-in delay-1">
+          <figcaption>
+            <span class="figure-chip">Image 1</span>
+            <span class="figure-title">Primary Reference Figure</span>
+          </figcaption>
+          <div class="figure-frame">
+            <img src="./images/image.png" alt="Image 1 reference figure for project understanding" loading="lazy">
+          </div>
+        </figure>
+
+        <figure class="key-figure-card float-in delay-2">
+          <figcaption>
+            <span class="figure-chip">Image 2</span>
+            <span class="figure-title">Secondary Reference Figure</span>
+          </figcaption>
+          <div class="figure-frame">
+            <img src="./images/image2.png" alt="Image 2 reference figure for project understanding" loading="lazy">
+          </div>
+        </figure>
+      </div>
+    </section>
+
   </main>
 
   <footer class="footer tech-footer">
     <div class="container">
-      <p>BTP SYNTHESIS V1.0 · NASA POWER TELEMETRY SYS</p>
+      <p>BIFACIAL SIMULATION PLATFORM · NASA POWER TELEMETRY</p>
     </div>
   </footer>
 

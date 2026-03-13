@@ -1,6 +1,7 @@
 const POWER_BASE_URL = "https://power.larc.nasa.gov/api/temporal/hourly/point";
 const POWER_PARAM_GHI = "ALLSKY_SFC_SW_DWN";
-const POWER_PARAMETERS = POWER_PARAM_GHI;  // temperature no longer requested
+const POWER_PARAM_TEMP = "T2M";
+const POWER_PARAMETERS = `${POWER_PARAM_GHI},${POWER_PARAM_TEMP}`;
 const SUPPORTED_TIMEZONES = {
   UTC: { offsetMinutes: 0, label: "UTC" },
   IST: { offsetMinutes: 330, label: "IST (UTC+05:30)" }
@@ -229,13 +230,7 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
     endDateCompact: range.endDateCompact,
     format: "JSON"
   });
-  const csvUrl = buildPowerUrl({
-    latitude,
-    longitude,
-    startDateCompact: range.startDateCompact,
-    endDateCompact: range.endDateCompact,
-    format: "CSV"
-  });
+  // csvUrl removed as unused
 
   const response = await fetch(jsonUrl, {
     headers: {
@@ -249,6 +244,7 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
 
   const payload = await response.json();
   const ghiSeries = payload?.properties?.parameter?.[POWER_PARAM_GHI];
+  const tempSeries = payload?.properties?.parameter?.[POWER_PARAM_TEMP];
 
   if (!ghiSeries || typeof ghiSeries !== "object") {
     throw createIrradianceError("Irradiance data is incomplete for this location.", 502);
@@ -263,6 +259,7 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
   const sortedEntries = Object.entries(ghiSeries).sort(([a], [b]) => a.localeCompare(b));
   const time = [];
   const ghiWhM2Hourly = [];
+  const tempCHourly = [];
 
   for (const [hourKey, rawValue] of sortedEntries) {
     const numericRaw = Number(rawValue);
@@ -288,7 +285,15 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
     time.push(zonedTime.timeIso);
     ghiWhM2Hourly.push(converted);
 
-    // temperature omitted
+    // Extract temperature, default to 25C if missing/fill value
+    let tempVal = 25;
+    if (tempSeries && tempSeries[hourKey] !== undefined) {
+       const rawTemp = Number(tempSeries[hourKey]);
+       if (Number.isFinite(rawTemp) && rawTemp !== fillValue) {
+         tempVal = rawTemp;
+       }
+    }
+    tempCHourly.push(tempVal);
   }
 
   if (time.length === 0) {
@@ -304,14 +309,16 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
       // Legacy key kept for compatibility with current simulation payload readers.
       ghi_w_m2: ghiWhM2Hourly,
       ghi_wh_m2: ghiWhM2Hourly,
-      },
+      temp_c: tempCHourly
+    },
     units: {
       ghiWhM2Hourly: "Wh/m^2",
       totalGhiWhM2: "Wh/m^2",
       averageEquivalentGhiWm2: "W/m^2",
       peakHourlyGhiWhM2: "Wh/m^2",
       // Legacy unit key kept for compatibility.
-      ghiWm2: "Wh/m^2"
+      ghiWm2: "Wh/m^2",
+      tempC: "°C"
     },
     timezone: range.timezoneLabel,
     dateRange: {
@@ -327,7 +334,7 @@ export async function getIrradianceData(latitude, longitude, options = {}) {
       normalizedHourlyUnit: "Wh/m^2",
       queriedTimeStandard: "UTC",
       jsonUrl,
-      csvUrl
+      csvUrl: jsonUrl // Placeholder or remove key
     }
   };
 }

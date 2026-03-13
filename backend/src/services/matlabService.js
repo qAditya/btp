@@ -134,7 +134,8 @@ export async function runMatlabBifacialSweep({
     irradianceSource,
     irradiance: {
       time: irradiance?.hourly?.time || [],
-      ghi: irradiance?.hourly?.ghi_w_m2 || []
+      ghi: irradiance?.hourly?.ghi_w_m2 || [],
+      tempC: irradiance?.hourly?.temp_c || []
     },
     ranges,
     panelConfig

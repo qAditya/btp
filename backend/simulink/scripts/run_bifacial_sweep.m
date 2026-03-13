@@ -31,7 +31,10 @@ function run_bifacial_sweep(configPath, outputPath)
         error('irradiance.ghi and irradiance.time must have equal length.');
     end
 
-    % temperature data ignored (model follows BTP-1 exactly)
+    tempC = [];
+    if isfield(cfg.irradiance, 'tempC')
+        tempC = cfg.irradiance.tempC(:)';
+    end
 
     % Location (needed for solar position)
     lat = 28.47; lon = 77.50;   % defaults
@@ -50,12 +53,34 @@ function run_bifacial_sweep(configPath, outputPath)
     else
         panelWidthM = 1.134;
     end
+    if isfield(panel, 'azimuthDeg')
+        panelAzimuthDeg = panel.azimuthDeg;
+    else
+        if lat >= 0
+            panelAzimuthDeg = 180;
+        else
+            panelAzimuthDeg = 0;
+        end
+    end
+    if isfield(panel, 'rearStructureLossFraction')
+        rearStructureLossFraction = panel.rearStructureLossFraction;
+    else
+        rearStructureLossFraction = 0.08;
+    end
+    if isfield(panel, 'noctC')
+        noctC = panel.noctC;
+    else
+        noctC = 45;
+    end
+    if isfield(panel, 'temperatureCoeffPerC')
+        temperatureCoeffPerC = panel.temperatureCoeffPerC;
+    else
+        temperatureCoeffPerC = -0.004;
+    end
 
     heightValues = cfg.ranges.heightCm(:)';
     tiltValues = cfg.ranges.tiltDeg(:)';
     albedoValues = cfg.ranges.albedo(:)';
-    % azimuth is no longer swept; assume equator-facing constant
-    azimuthValues = 180;  % placeholder, not iterated
 
     results = struct([]);
     idx = 0;
@@ -65,7 +90,7 @@ function run_bifacial_sweep(configPath, outputPath)
             for a = albedoValues
                 idx = idx + 1;
                 [metrics, hourlySeries] = evaluate_config(ghi, time, h, t, a, ...
-                    areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM);
+                    areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM, panelAzimuthDeg, rearStructureLossFraction, tempC, noctC, temperatureCoeffPerC);
                 results(idx).configuration = struct('heightCm', h, 'tiltDeg', t, 'albedo', a); %#ok<AGROW>
                 results(idx).metrics = metrics; %#ok<AGROW>
                 results(idx).hourlySeries = hourlySeries; %#ok<AGROW>
@@ -106,7 +131,7 @@ function run_bifacial_sweep(configPath, outputPath)
 end
 
 function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg, albedo, ...
-        areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM)
+    areaM2, frontEfficiency, inverterEfficiency, bifaciality, lat, lon, panelWidthM, panelAzimuthDeg, rearStructureLossFraction, tempC, noctC, temperatureCoeffPerC)
     totalEnergyKWh = 0;
     peakPowerKW = 0;
     totalFront = 0;
@@ -143,9 +168,19 @@ function [metrics, hourlySeries] = evaluate_config(ghi, time, heightCm, tiltDeg,
         end
 
         [effVal, frontVal, rearVal] = calculate_irradiance( ...
-            ghiVal, tiltDeg, heightCm, albedo, bifaciality, lat, lon, hourUTC, doy, panelWidthM);
+            ghiVal, tiltDeg, heightCm, albedo, bifaciality, lat, lon, hourUTC, doy, panelWidthM, panelAzimuthDeg, rearStructureLossFraction);
 
-        powerKW = (effVal / 1000) * areaM2 * frontEfficiency * inverterEfficiency;
+        if ~isempty(tempC) && numel(tempC) >= i && isfinite(tempC(i))
+            tAmb = tempC(i);
+        else
+            tAmb = 25;
+        end
+
+        cellTemp = tAmb + (effVal / 800) * (noctC - 20);
+        tempDerate = 1 + temperatureCoeffPerC * (cellTemp - 25);
+        tempDerate = max(0.5, min(1.15, tempDerate));
+
+        powerKW = (effVal / 1000) * areaM2 * frontEfficiency * inverterEfficiency * tempDerate;
 
         totalEnergyKWh = totalEnergyKWh + powerKW;
         peakPowerKW = max(peakPowerKW, powerKW);

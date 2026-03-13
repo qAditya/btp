@@ -15,7 +15,11 @@ const DEFAULT_PANEL_CONFIG = {
   widthM: 1.134,
   frontEfficiency: 0.21,
   inverterEfficiency: 0.96,
-  bifaciality: 0.7
+  bifaciality: 0.7,
+  azimuthDeg: 180,
+  rearStructureLossFraction: 0.08,
+  noctC: 45,
+  temperatureCoeffPerC: -0.004
 };
 
 const MAX_CONFIGURATIONS = 10000;
@@ -47,7 +51,7 @@ function toFiniteNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-// ─── BTP-1 helper calculations (solar geometry internally used) ─────────────────
+// ─── Solar geometry helpers ─────────────────
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -60,12 +64,12 @@ function getDayOfYear(isoString) {
 }
 
 function solarDeclination(doy) {
-  // declination calculation as used in BTP-1
+  // declination approximation
   return 23.45 * Math.sin(degToRad((360 / 365) * (284 + doy)));
 }
 
 function equationOfTime(doy) {
-  // equation-of-time approximation required for BTP-1 geometry
+  // equation-of-time approximation
   const B = degToRad((360 / 365) * (doy - 81));
   return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
 }
@@ -77,13 +81,14 @@ function cosSolarZenith(latDeg, decDeg, hourAngleDeg) {
   return Math.sin(latR) * Math.sin(decR) + Math.cos(latR) * Math.cos(decR) * Math.cos(haR);
 }
 
-function cosAngleOfIncidence(latDeg, decDeg, tiltDeg, hourAngleDeg) {
-  // Equator-facing tilted surface (south in N-hemisphere, north in S-hemisphere)
-  const effectiveLat = latDeg >= 0 ? latDeg - tiltDeg : latDeg + tiltDeg;
-  const effR = degToRad(effectiveLat);
-  const decR = degToRad(decDeg);
-  const haR = degToRad(hourAngleDeg);
-  return Math.sin(decR) * Math.sin(effR) + Math.cos(decR) * Math.cos(effR) * Math.cos(haR);
+function cosAngleOfIncidence(cosZ, tiltDeg, sunAzimuthRad, panelAzimuthRad) {
+  // Generalized AOI for any surface azimuth.
+  const betaRad = degToRad(tiltDeg);
+  const sinZ = Math.sqrt(Math.max(0, 1 - cosZ * cosZ));
+  return (
+    cosZ * Math.cos(betaRad) +
+    sinZ * Math.sin(betaRad) * Math.cos(sunAzimuthRad - panelAzimuthRad)
+  );
 }
 
 function extraterrestrialHorizontal(doy, cosZenith) {
@@ -93,10 +98,10 @@ function extraterrestrialHorizontal(doy, cosZenith) {
 }
 
 
-// ─── Diffuse fraction calculation per BTP-1 model (kt-based)
+// ─── Diffuse fraction calculation (kt-based)
 
 function diffuseFraction(kt) {
-  // piecewise kd formula adopted directly from BTP-1
+  // piecewise kd formula
   if (kt <= 0) return 1.0;
   if (kt <= 0.22) return 1.0 - 0.09 * kt;
   if (kt <= 0.80) {
@@ -113,7 +118,7 @@ function diffuseFraction(kt) {
 
 
 
-// ─── Solar azimuth (BTP‑2: needed for shadow projection) ─────────────────
+// ─── Solar azimuth (used for shadow projection) ─────────────────
 
 function solarAzimuth(latRad, decRad, haRad, cosZ) {
   // Returns solar azimuth in radians, measured clockwise from north.
@@ -131,7 +136,7 @@ function solarAzimuth(latRad, decRad, haRad, cosZ) {
   return az;
 }
 
-// ─── Shadow View Factor F_V (BTP‑2, Yusufoglu et al. 2014) ──────────────
+// ─── Shadow View Factor F_V ──────────────
 //
 // Computes the view factor from the module's rear surface to the shadow
 // that the module itself casts on the ground.  The shadow attenuates
@@ -220,6 +225,7 @@ function normalizeIrradiancePayload(irradiance) {
   const hourly = irradiance?.hourly || irradiance;
   const time = hourly?.time;
   const ghi = hourly?.ghi_wh_m2 || hourly?.ghi_w_m2 || hourly?.ghiWhM2 || hourly?.ghiWm2 || [];
+  const tempC = hourly?.temp_c || [];
 
   if (!Array.isArray(time) || time.length === 0) {
     throw createInputError("Irradiance payload does not include valid hourly timestamps.");
@@ -233,11 +239,10 @@ function normalizeIrradiancePayload(irradiance) {
     throw createInputError("Irradiance time and GHI arrays must have the same length.");
   }
 
-  // temperature data is ignored by the simulation model
-
   return {
     time,
     ghi,
+    tempC,
     units: irradiance?.units || {},
     timezone: irradiance?.timezone || "UTC",
     dateRange: irradiance?.dateRange || null,
@@ -395,6 +400,42 @@ function normalizePanelConfig(panelConfig) {
       ),
       4
     ),
+    azimuthDeg: roundTo(
+      normalizeNumericField(
+        input.azimuthDeg,
+        DEFAULT_PANEL_CONFIG.azimuthDeg,
+        { min: 0, max: 360 },
+        "panelConfig.azimuthDeg"
+      ),
+      3
+    ),
+    rearStructureLossFraction: roundTo(
+      normalizeNumericField(
+        input.rearStructureLossFraction,
+        DEFAULT_PANEL_CONFIG.rearStructureLossFraction,
+        { min: 0, max: 0.3 },
+        "panelConfig.rearStructureLossFraction"
+      ),
+      4
+    ),
+    noctC: roundTo(
+      normalizeNumericField(
+        input.noctC,
+        DEFAULT_PANEL_CONFIG.noctC,
+        { min: 20, max: 65 },
+        "panelConfig.noctC"
+      ),
+      3
+    ),
+    temperatureCoeffPerC: roundTo(
+      normalizeNumericField(
+        input.temperatureCoeffPerC,
+        DEFAULT_PANEL_CONFIG.temperatureCoeffPerC,
+        { min: -0.01, max: 0 },
+        "panelConfig.temperatureCoeffPerC"
+      ),
+      6
+    )
   };
 }
 
@@ -523,31 +564,12 @@ function normalizeRanges(rangesInput) {
 }
 
 // calculateEffectiveIrradiance
-// Implements the core BTP‑1 equations verbatim.  The formulas used are
-// exactly those exposed in the research paper and mirror the front-end
-// dashboard; no additional geometry or decomposition formulas are
-// presented here, they exist only as the code that evaluates these
-// expressions.
-//
-// Front irradiance (BTP‑1):
-//   beam_tilted = DNI × max(0, cos I)
-//   sky_vf      = (1 + cos β)/2
-//   gnd_vf      = (1 - cos β)/2
-//   ghi_diffuse = GHI × kd
-//   front       = beam_tilted + ghi_diffuse×sky_vf + GHI×albedo×gnd_vf
-//
-// Rear irradiance (BTP‑1, eqns 7–8):
-//   rear_vf       = (1 − cos β)/2
-//   height_factor = (1 + h/1000)   % h in cm
-//   rear          = GHI × albedo × rear_vf × height_factor × bifaciality
-//
-// Total effective = front + rear (no temperature correction).
-//
-// The helper computations below (solar position, kt, etc.) merely
-// supply the variables (DNI, cos I, kd) required by these equations.
+// Computes front and rear effective irradiance using transposition,
+// diffuse decomposition, and geometric rear-side shadow/view-factor terms.
 function calculateEffectiveIrradiance({
   ghiWm2, tiltDeg, heightCm, albedo, bifaciality,
-  latitude, longitude, timeIso, panelWidthM
+  latitude, longitude, timeIso, panelWidthM, panelAzimuthDeg,
+  rearStructureLossFraction, ambientTempC, noctC, temperatureCoeffPerC
 }) {
   if (ghiWm2 <= 0) {
     return { frontEffectiveWm2: 0, rearEffectiveWm2: 0, totalEffectiveWm2: 0, tempDerate: 1 };
@@ -576,10 +598,9 @@ function calculateEffectiveIrradiance({
   const decRad = degToRad(dec);
   const haRad = degToRad(ha);
   const sunAzimuthRad = solarAzimuth(latRad, decRad, haRad, cosZ);
-  // Panel azimuth: equator-facing (south in N-hemisphere, north in S-hemisphere)
-  const panelAzimuthRad = latitude >= 0 ? Math.PI : 0; // π = south, 0 = north
+  const panelAzimuthRad = degToRad(((panelAzimuthDeg % 360) + 360) % 360);
 
-  // ── Erbs decomposition: GHI → beam + diffuse (BTP‑1 eqn 1) ──
+  // ── Erbs decomposition: GHI → beam + diffuse ──
   const G0h = extraterrestrialHorizontal(doy, cosZ);
   const kt = G0h > 0 ? clamp(ghiWm2 / G0h, 0, 1.5) : 0;
   const kd = diffuseFraction(kt);
@@ -587,8 +608,8 @@ function calculateEffectiveIrradiance({
   const ghiBeam = Math.max(0, ghiWm2 - ghiDiffuse);
   const dni = cosZ > 0.01 ? ghiBeam / cosZ : 0;
 
-  // ── Front irradiance: equator-facing + Liu-Jordan isotropic transposition (BTP‑1 eqns 2‑4) ──
-  const cosI = cosAngleOfIncidence(latitude, dec, tiltDeg, ha);
+  // ── Front irradiance: tilted-plane + Liu-Jordan isotropic transposition ──
+  const cosI = cosAngleOfIncidence(cosZ, tiltDeg, sunAzimuthRad, panelAzimuthRad);
   const beamTilted = dni * Math.max(0, cosI);
   const skyVF = (1 + Math.cos(betaRad)) / 2;
   const gndVF = (1 - Math.cos(betaRad)) / 2;
@@ -597,7 +618,7 @@ function calculateEffectiveIrradiance({
   const frontBase = Math.max(0, beamTilted + diffuseTilted + groundReflFront);
   const frontEffectiveWm2 = frontBase;
 
-  // ── Rear irradiance: BTP‑2 Equation 9 (Yusufoglu et al. 2014) ──
+  // ── Rear irradiance with geometric shadow attenuation ──
   //
   //   E_rear = α·DHI·(1+cosβ)/2  +  α·(GHI-DHI)·((1+cosβ)/2 − F_V)
   //
@@ -613,11 +634,30 @@ function calculateEffectiveIrradiance({
 
   const rearDiffuseComponent = albedo * ghiDiffuse * rearVF;
   const rearDirectComponent = albedo * ghiBeam * Math.max(0, rearVF - Fv);
-  const rearEffectiveWm2 = Math.max(0, (rearDiffuseComponent + rearDirectComponent) * bifaciality);
 
-  // No temperature derating.
+  // Apply realistic structure-related rear loss (rails, clamps, junction box, etc.).
+  const structureFactor = clamp(1 - toFiniteNumber(rearStructureLossFraction, 0), 0, 1);
+  const rearEffectiveWm2 = Math.max(
+    0,
+    (rearDiffuseComponent + rearDirectComponent) * bifaciality * structureFactor
+  );
+
   const totalIrr = frontEffectiveWm2 + rearEffectiveWm2;
-  return { frontEffectiveWm2, rearEffectiveWm2, totalEffectiveWm2: Math.max(0, totalIrr), tempDerate: 1 };
+  
+  // ── Temperature Derating (NOCT Model) ──
+  const NOCT = toFiniteNumber(noctC, DEFAULT_PANEL_CONFIG.noctC);
+  const tAmb = ambientTempC !== undefined ? ambientTempC : 25;
+  const cellTemp = tAmb + (totalIrr / 800) * (NOCT - 20);
+  const gamma = toFiniteNumber(
+    temperatureCoeffPerC,
+    DEFAULT_PANEL_CONFIG.temperatureCoeffPerC
+  );
+  
+  // Derating factor relative to STC (25°C)
+  let tempDerate = 1 + gamma * (cellTemp - 25);
+  tempDerate = Math.min(Math.max(tempDerate, 0.5), 1.15); 
+
+  return { frontEffectiveWm2, rearEffectiveWm2, totalEffectiveWm2: Math.max(0, totalIrr), tempDerate };
 }
 
 
@@ -634,9 +674,11 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
   let totalEffectiveWm2 = 0;
 
   const hourlySeries = [];
+  const tempArray = irradiance.tempC || new Array(irradiance.time.length).fill(25);
 
   for (let index = 0; index < irradiance.time.length; index += 1) {
     const ghiWm2 = Math.max(0, toFiniteNumber(irradiance.ghi[index], 0));
+    const ambientTempC = tempArray[index];
 
     const effective = calculateEffectiveIrradiance({
       ghiWm2,
@@ -647,7 +689,12 @@ function evaluateConfiguration({ configuration, irradiance, panel, location }) {
       latitude: location.latitude,
       longitude: location.longitude,
       timeIso: irradiance.time[index],
-      panelWidthM: panel.widthM
+      panelWidthM: panel.widthM,
+      panelAzimuthDeg: panel.azimuthDeg,
+      rearStructureLossFraction: panel.rearStructureLossFraction,
+      ambientTempC,
+      noctC: panel.noctC,
+      temperatureCoeffPerC: panel.temperatureCoeffPerC
     });
 
     const powerKW =

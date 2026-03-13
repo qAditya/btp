@@ -3,7 +3,7 @@
 Express backend for:
 - Free geolocation lookup by place name
 - Free irradiance-only time series by geo-coordinates
-- Bifacial PV sweep (height, tilt, albedo; azimuth fixed equator‑facing)
+- Bifacial PV sweep (height, tilt, albedo; configurable azimuth)
 - Optional MATLAB execution path
 
 ## Folder Layout
@@ -63,7 +63,11 @@ Request (JavaScript engine default):
     "areaM2": 2.2,
     "frontEfficiency": 0.21,
     "inverterEfficiency": 0.96,
-    "bifaciality": 0.7
+    "bifaciality": 0.7,
+    "azimuthDeg": 180,
+    "rearStructureLossFraction": 0.08,
+    "noctC": 45,
+    "temperatureCoeffPerC": -0.004
   }
 }
 ```
@@ -101,15 +105,17 @@ Backward-compatible alias to `/api/simulation/analyze`.
 - `MATLAB_TIMEOUT_MS` default `300000`
 
 ## Effective Irradiance Formula
-Equations mirror those presented in the BTP‑1 paper; no temperature
-correction is applied so the output can be quoted directly.
+The model combines front-side transposition, rear-side ground reflection,
+view-factor shading, and thermal derating.
 
 - **Front irradiance**: Liu‑Jordan isotropic transposition of beam + diffuse
-  + ground reflection (equator‑facing POA).  [BTP‑1 eqns 2‑4]
+  + ground reflection.
 - **Rear irradiance**: ground‑reflected + diffuse component
   `rear_ground = GHI × albedo × rearViewFactor × heightFactor`
   `rear_diffuse = GHI_diffuse × 0.1`
-  `rear = (rear_ground + rear_diffuse) × bifaciality`  [BTP‑1 eqns 7‑8 + diffuse]
-- **Total effective** = front + rear (no derating).
+  `rear = (rear_ground + rear_diffuse) × bifaciality`
+- **Total effective** = front + rear.
+- **Cell temperature model**: $T_{cell} \approx T_{amb} + \frac{G_{total}}{800}(NOCT-20)$
+- **Temperature derate**: power multiplied by $1 + \gamma (T_{cell}-25)$, clamped to `[0.5, 1.15]`
 
-Azimuth remains fixed at equator‑facing; variations are omitted by design.
+Rear-side structure loss is modeled with `rearStructureLossFraction` (default 0.08).
