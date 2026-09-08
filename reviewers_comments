@@ -1,0 +1,20 @@
+Reviewer 1 Comments:
+The methodology would benefit from inclusion of experimental or real-field validation to verify the accuracy of the simulated results and strengthen confidence in the computational model. Additionally, uncertainty analysis or sensitivity analysis of key parameters (tilt angle, albedo, and height) should be included to demonstrate robustness of the optimization results. Finally, comparative evaluation with existing optimization methods or standard PV simulation tools would help quantify the performance improvement achieved by the proposed framework.
+
+
+Reviewer 2 Comments:
+1.Some references appear inconsistent or incomplete, and all citations should be revised to comply with IEEE referencing standards and formatting requirements. 
+2.Figure and table presentation should be enhanced, with clearer formatting, improved captions, and stronger integration into the discussion. 
+3.Additional validation through comparison with existing approaches or real-world datasets would strengthen the credibility and practical significance of the proposed framework. 
+
+
+Reviewer 3 Comments:
+  1. All papers must strictly follow the IEEE conference template (available at: https://ce2ct.gehu.ac.in/camera.html).
+  2. The abstract must concisely summarize the motivation, methodology, and key results of the study.
+  3. The novelty of the work must be clearly highlighted in 2–3 bullet points at the end of the Introduction section.
+  4. Figures must have a minimum resolution of 300 dpi, with clearly visible content. Tables must be in an editable format (not as images). 
+  5. All figures and tables must be properly cited within the manuscript.
+  6. The Results section must be clearly presented and supported with a comparative analysis against relevant state-of-the-art methods.
+  7. Equations must be properly formatted (not as images) and numbered sequentially.
+  8. Carefully proofread the paper to eliminate typographical and grammatical errors and ensure clarity.
+  9.  Ensure that all references are appropriately cited within the text.

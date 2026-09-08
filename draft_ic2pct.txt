@@ -1,0 +1,486 @@
+ Optimal Configuration of Bifacial Photovoltaic 
+Modules using Parametric Analysis  
+Astitva Kumar   
+ Department of Electrical Engineering  
+Netaji Subhas University of Technology   
+New delhi, India  
+astitva.kumar@nsut.ac.in  
+ 
+Ashish Upadhyay  
+Department of Electrical Engineering   
+Netaji Subhas University of Technology   
+New Delhi, India  
+ashish.upadhyay.ug22@nsut.ac.inPratyai Chakrabarty  
+Department of Electrical Engineering   
+Netaji Subhas University of Technology   
+New Delhi, India  
+pratyai.chakrabarty.ug22@nsut.ac.in  
+ 
+Aditya Garg  
+Department of Electrical Engineering   
+Netaji Subhas University of Technology   
+New Delhi, India  
+aditya_garg.ug22@nsut.ac.in  Aman  
+Department of Electrical Engineering   
+Netaji Subhas University of Technology   
+New Delhi, India  
+aman.ug22@nsut.ac.in  
+ 
+  
+Abstract—Solar photovoltaic (PV) technology has become a 
+key component in the global transition toward sustainable energy, 
+with countries such as India witnessing rapid growth in solar 
+power deployment due to abundant solar resources and increasing 
+energy demand. E fficient utilization of available solar irradiance 
+is therefore critical to maximize energy generation from installed 
+PV systems. In this context, bifacial photovoltaic modules have 
+gained significant attention as they are capable of capturing solar 
+irradi ance from both the front and rear surfaces, leading to higher 
+energy yield compared to conventional monofacial panels. 
+However, the performance advantage of bifacial PV systems 
+strongly depends on installation parameters such as module tilt 
+angle, ground s urface albedo, and mounting height, which 
+influence the amount of reflected and incident irradiance received 
+by the rear side of the module. This paper presents a 
+computational framework for determining the optimal 
+configuration of bifacial PV installation s for a given geographical 
+location. A user -oriented front -end platform is developed where 
+inputs such as city and date are provided, and corresponding 
+hourly irradiance data are retrieved from the NASA database. 
+Parametric analyses are then performed by v arying key 
+installation parameters including tilt angle, surface albedo, and 
+mounting height. The framework evaluates the resulting energy 
+output and identifies the configuration that maximizes power 
+generation for the selected location. The proposed appro ach 
+enables location -specific optimization of bifacial PV systems and 
+provides a practical tool for improving system design and 
+deployment strategies.  
+Keywords —Solar Photovoltaic, Bifacial PV, parametric 
+analysis, frontend platform, strategic installation.  
+I. INTRODUCTION  
+      Solar photovoltaic (PV) technology has emerged as one of 
+the most promising renewable energy solutions for addressing 
+the increasing global demand for clean and sustainable 
+electricity generation. Continuous advancements in PV modul e 
+technology and system design have enabled solar power 
+systems to be deployed across a wide range of climatic regions. 
+Conventional monofacial photovoltaic modules generate 
+electricity only from solar radiation incident on the front 
+surface of the panel. A s a result, a por tion of the available solar energy in the surrounding environment, such as reflected and 
+diffuse radiation, remains unutilized. Bifacial photovoltaic 
+modules have been  introduced as an effective alternative 
+capable of converting    irradiance incident on both  the front and 
+rear surfaces of the  module, thereby increasing the total energy 
+harvested from the solar resource  [1], [2]. Several studies have 
+demonstrated that bifacial PV systems can achieve higher 
+energy yields compared to conventional modules when 
+appropriate installation configurations are adopted [3]. 
+Comprehensive reviews of bifacial PV technology highlight 
+that rear -side irradiance contribution is strongly influenced by 
+environmental and geometric parameters including ground 
+reflectivity, module tilt angle, and installation height [1], [4]. 
+      The performance of bifacial photovoltaic systems depends 
+on the complex interaction between solar radiation, ground 
+reflection, and system geometry. Numerous studies have 
+investigated the influence of these parameters on the overall 
+energy generation of bi facial PV modules. For instance, tilt 
+angle has been identified as a critical parameter affecting the 
+balance between front -side and rear -side irradiance capture, 
+with optimal angles varying depending on geographical 
+location and solar path character istics  [5], [6]. Similarly, 
+ground surface reflectivity, commonly referred to as albedo, 
+plays a crucial role in determining the amount of radiation 
+reflected toward the rear surface of the module [7], [8]. 
+Experimental investigations and modeling studies have shown 
+that higher albedo surfaces can significantly increase rear -side 
+irradiance and consequently improve overall energy generation 
+[9], [10]. In addition to tilt and albedo, the elevation of modules 
+above the ground also affects the view factor between the 
+module and reflective surfaces, which can influence the amount 
+of rear -side radiation received by the panel [11]. Field 
+experiments conducted under various climatic conditions 
+further confirm that environmental factors and installation 
+configurations collectively determine the bifacial gain 
+achievable in real PV systems [12], [13]. 
+      Despite the growing body of research on bifacial 
+photovoltaic systems, several challenges remain in determining 
+the optimal configuration of these systems under varying 
+
+environmental conditions. Many existing studies have focused 
+on individual parameters such as tilt angle, albedo, or module 
+elevation, often evaluating their effects independently rather 
+than considering their combined influence on system 
+performance [5], [8], [9]. Other investigations have developed 
+modeling approaches or global performance assessments of 
+bifacial PV systems; however, these studies are often limited to 
+predefined system configurations or specific climatic 
+conditions [4]. Furthermore, research on the design of large -
+scale bifacial solar farms indicates that multiple parameters, 
+including module orientation, mounting height, and system 
+geometry, must be optimized simultaneously to achieve 
+maximum energy output  [14]. Consequently, there is a need for 
+a systematic analytical framework that can evaluate the 
+combined influence of key installation parameters using 
+location -specific solar irradiance data. Such an approach would 
+enable the identification of optimal configu rations that 
+maximize energy generation for a given site. The present work 
+addresses this requirement by developing a parametric analysis 
+framework that investigates the influence of tilt angle, ground 
+albedo, and mounting height on bifacial PV system 
+performance in order to determine the optimal configuration for 
+maximizing power output.  This paper is divided into 4 sections 
+– first is the introduction, second is the methodology, third are 
+the results and discussion and fourth is the conclusion.  
+ 
+II. METHODOLOGY  
+This paper proposes a parametric analysis for the optimal 
+configuration of bifacial photovoltaic systems. Tilt angle, 
+mounting height of the panel, surface albedo and view factor are 
+the parameters that are addressed  as shown in Fig 1 . A Simulink 
+model was developed initially to model the bifacial PV and later 
+was incorporated in the user frontend to calculate the max power 
+gain achieved and find the best configuration for PV system 
+designers.  
+Fig. 1.  Key Parameters affecting Bifacial PV modules [11] 
+A. Mathematical Formulation of Bifacial PV Operatio n 
+Unlike conventional monofacial PV modules, which 
+receive irradiance only on the front surface, bifacial modules 
+are capable of utilizing additional radiation reflected from the 
+ground and surrounding surfaces.  The total effective irradiance 
+on a bifacial module can therefore be expressed as the sum of 
+the front and rear irradiance components [4]:  
+𝐺𝑡𝑜𝑡=𝐺𝑓𝑟𝑜𝑛𝑡 +𝐺𝑟𝑒𝑎𝑟 (1) 
+  
+where; 𝐺𝑡𝑜𝑡 = total irradiance received by the bifacial module , 
+𝐺𝑓𝑟𝑜𝑛𝑡  = irradiance incident on the front surface , 𝐺𝑟𝑒𝑎𝑟 = 
+irradiance incident on the rear surface.  The front irradiance and 
+rear irradiance  depend  on several factors which we take into 
+account in the analysis . The front -side irradiance is estimated 
+using the Liu –Jordan isotropic sky model  [15], which 
+decomposes the global horizontal irradiance into beam, diffuse, 
+and ground -reflected components. The direct beam irradiance 
+incident on the tilted module surface is calculated a s: 
+ 
+𝑏𝑒𝑎𝑚 𝑡𝑖𝑙𝑡𝑒𝑑 =𝐷𝑁𝐼 ×𝑚𝑎𝑥 (0,𝑐𝑜𝑠𝐼 ) (2) 
+ 
+where; DNI represents the direct normal irradiance and 
+𝐼 denotes the angle of incidence between the incoming solar 
+radiation and the module surface. The max  (0,cos 𝐼)term 
+ensures that negative irradiance values are avoided when the 
+sun is below the panel horizon.  The diffuse irradiance 
+component is modeled assuming isotropic sky distribution. The 
+sky view factor  and ground view factor  for the tilted surface is 
+given by  [15]: 
+ 
+𝑠𝑘𝑦𝑣𝑓= (1+𝑐𝑜𝑠𝛽
+2) (3) 
+ 
+𝑔𝑛𝑑𝑣𝑓= (1−𝑐𝑜𝑠𝛽
+2) (4) 
+ 
+where 𝛽 represents the module tilt angle. Th e sky view factor 
+quantifies the portion of the sky dome visible to the tilted PV 
+surface.  Similarly, the ground view factor  represents the 
+fraction of ground -reflected radiation reaching the module 
+surface. The diffuse component of global irradiance is given by 
+DHI. Combining these contributions, the total front -side 
+irradiance is calculated as  [15]: 
+ 
+𝐺𝑓𝑟𝑜𝑛𝑡 =𝑏𝑒𝑎𝑚𝑡𝑖𝑙𝑡𝑒𝑑 +(𝐷𝐻𝐼 ×𝑠𝑘𝑦𝑣𝑓)+
+(𝐺𝐻𝐼 ×𝜌×𝑔𝑛𝑑𝑣𝑓) (5) 
+ 
+The rear irradiance to be computed depends on shadow view 
+factor 𝐹𝑉, albedo, DHI, GHI and rear sky view factor. The 
+shadow view factor 𝐹𝑉represents the reduction in rear 
+irradiance due to row -to-row shading in the PV array. It is 
+determined by evaluating the solar profile angle and the 
+geometric relationship between the sun position and the module 
+orientation.  The solar profile angle is computed as  [16], [17]: 
+ 
+𝛾𝑝𝑟𝑜𝑓𝑖𝑙𝑒 =𝑡𝑎𝑛−1(𝑡𝑎𝑛(𝑠𝑢𝑛𝑒𝑙𝑒𝑣)
+𝑐𝑜𝑠(𝑠𝑢𝑛 𝑎𝑧−𝑝𝑎𝑛𝑒𝑙 𝑎𝑧)) (6) 
+ 
+where; 𝑠𝑢𝑛𝑒𝑙𝑒𝑣 is the solar elevation angle and 𝑠𝑢𝑛𝑎𝑧 and 
+𝑝𝑎𝑛𝑒 𝑙𝑎𝑧represent the solar and panel azimuth angles, 
+respectively.  The lower and upper bounds of the shadow region 
+are calculated using (6) and is given by [16], [17]: 
+
+
+ 
+𝑠ℎ𝑎𝑑𝑜 𝑤𝑙𝑜𝑤𝑒𝑟 =ℎ
+tan(𝛾𝑝𝑟𝑜𝑓𝑖𝑙𝑒 ) (7) 
+ 
+𝑠ℎ𝑎𝑑𝑜 𝑤𝑢𝑝𝑝𝑒𝑟 =ℎ+𝑊𝑠𝑖𝑛𝛽
+tan(𝛾𝑝𝑟𝑜𝑓𝑖𝑙𝑒 ) (8) 
+ 
+where; h is the mounting height and W is the width of the 
+module. The rear sky view factor  (𝑟𝑒𝑎𝑟𝑣𝑓) geometrically is 
+represented by (3). The shadow view factor 𝐹𝑉 is now 
+calculated as [18]: 
+ 
+𝐹𝑉=𝑟𝑒𝑎𝑟𝑣𝑓−∫𝑐𝑜𝑠𝜃1𝑐𝑜𝑠𝜃2
+2𝑟𝑠ℎ𝑎𝑑𝑜𝑤𝑑𝑥 (9) 
+ 
+where; 𝜃1 and 𝜃2 represent the geometric angles between the 
+ground and module surfaces and 𝑟 is the distance between the 
+differential elements  as shown in Fig 2.  Now, the final rear 
+irradiance is given by incorporating the above factors [18]: 
+ 
+𝐺𝑟0=𝜌∙𝐷𝐻𝐼 ∙𝑟𝑒𝑎𝑟𝑣𝑓+ 𝜌∙(𝐺𝐻𝐼 −𝐷𝐻𝐼 )∙
+(𝑟𝑒𝑎𝑟𝑣𝑓−𝐹𝑉) (10) 
+ 
+𝐺𝑟𝑒𝑎𝑟 =𝐺𝑟0×𝑏𝑖𝑓𝑎𝑐𝑖𝑎𝑙𝑖𝑡𝑦  (11) 
+ 
+The bifaciality  factor represents the ratio of rear -side efficiency 
+to front -side efficiency of the bifacial PV module .  
+ 
+ 
+Fig. 2. View Factor representation for Bifacial PV  
+B. Simulink Model  
+The bifacial photovoltaic (PV) system is modeled in 
+MATLAB/Simulink  as shown in Fig. 3 to analyze the electrical 
+performance of the module under varying environmental and 
+installation conditions. The model incorporates key parameters 
+such as global horizontal irradiance (GHI), ground reflectivity 
+(albedo), tilt angle, mounting height, and t emperature.   
+The input parameters are processed through a MATLAB 
+function block ( calculate_irradiance ), which determines the 
+effective irradiance 𝐺𝑒𝑓𝑓 received by the module , the one as in 
+(1). The resulting effective irradiance value is then supplied to 
+the PV Array block as the irradiance input 𝐼𝑟. The PV Array 
+block represents the electrical model of the photovoltaic module and produces the output current and voltage 
+corresponding to the applied operating conditions.  To obtain 
+the electrical characteristics of the PV system, a controlled 
+voltage source is used to perform an I –V sweep across the PV 
+module terminals. The voltage sweep is generated using a ramp 
+signal ( 𝑉𝑟𝑎𝑚𝑝 ), which gradually varies the applied voltage 
+across the PV array over the simulation interval. As the voltage 
+changes, the PV module produces corresponding current 
+values, allowing the complete I –V characteristic curve of the 
+module to be obtained. The me asured current ( 𝐼𝑚𝑒𝑎𝑠 ) and 
+voltage ( 𝑉𝑚𝑒𝑎𝑠 ) signals are collected through a bus creator block 
+and forwarded to subsequent processing stages.  he first scope 
+plots the current –voltage (I–V) characteristics of the bifacial 
+PV module, while the second scope plots the power –voltage 
+(P–V) characteristics.  
+ 
+Fig. 3. Simulink model for Bifacial PV Module  
+C. Proposed Frontend Platform Framework  
+The proposed framework is designed to evaluate and 
+determine the optimal configuration of bifacial photovoltaic 
+(PV) systems by integrating location -based solar irradiance 
+data with parametric performance analysis  as shown in Fig. 4. 
+The framework consists of four primary layers: the user 
+interface, backend application, analysis and simulation engine, 
+and the results dashboard.   
+The process begins at the user interface, where the user 
+provides the necessary input parameters required for the 
+analysis. These inputs include the geographical location in the 
+form of a selected city, the desired date range for analysis, and 
+key system c onfiguration parameters such as module tilt angle, 
+mounting height, and ground surface type.  Once the input 
+parameters are specified, the backend application processes 
+these inputs and generates a request for solar irradiance data. 
+The irradiance data is obtained through the NASA POWER 
+API, which provides location -specific solar radiation data for  
+the selected city and time period.   
+The irradiance dataset is then passed to the analysis and 
+simulation engine, which performs the computational 
+evaluation of the bifacial PV system. This module integrates the 
+irradiance data with the user -defined installation parameters to 
+simulate the ele ctrical behavior of the bifacial PV system. The 
+simulation process evaluates the current –voltage (I–V) and 
+power–voltage (P –V) characteristics of the system and 
+calculates key performance indicators such as output power and 
+bifacial gain under different co nfiguration settings.  
+
+
+Finally, the computed results are presented through a results 
+dashboard, which provides a structured visualization of the 
+system performance. The dashboard displays the maximum 
+power output and bifacial gain values in tabular form, along 
+with graphical rep resentations of the I –V and P –V 
+characteristics.  
+ 
+Fig. 4. Proposed Framework for Optimal Configuration of Bifacial PV 
+systems using MATLAB engine  
+III. RESULTS AND DISCUSSION  
+To evaluate the proposed framework, a case study was 
+conducted for the location Greater Noida, India, using the 
+developed frontend –backend analysis platform. The 
+geographical location was selected through the user interface, 
+and the simulation date was fix ed as 13 March 2026 in order to 
+obtain location -specific solar irradiance data for that day. a 
+parametric sweep was performed over a range of geometric 
+configurations. The module mounting height was varied from 
+50 cm to 450 cm with increments of 50 cm, whi le the tilt angle 
+was varied from 10 ℃ to 50 ℃ in steps of 10 ℃. The azimuth 
+angle of the PV module was fixed at 180 ° for south facing 
+panels , which is commonly used for photovoltaic installations 
+in the northern hemisphere to maximize solar exposure.  The 
+bifaciality factor is assumed  practically  to be  0.7.  The ground  
+surface type was assumed to be concrete, corresponding to an 
+albedo value of 0.3. The Nominal Operating Cell Temperature 
+(NOCT) is kept at 45 ℃. The irradiance was fetched using the 
+NASA POWER API and consequently, the observed total GHI 
+was 6.08 kWh/m2 and peak GHI was 866.53 Wh/m2. 
+The analyses were  run using MATLAB engine 
+incorporating the mathematical formulation discussed before. 
+The optimal configuration among 45 evaluation points was  
+available as a result in form of optimal tilt angle (30 °) and 
+mounting height (450  cm) corresponding to the selected albedo.  
+The rear gain came out to be a good 16. 55% using (11) . The Fig 
+5a. and 5b. shows the I -V and P -V graphs for the various 
+parameter based analyses. The optimization objective can be 
+max energy or max rear gain based on which respective 
+configuration can be achieved.  The PV system designer can 
+choose what is his optimization objective.  Table I. shows the 
+rear gain percentage, energy and power achieved for the three 
+parameters with optimization objective of max energy.  Table 
+II. shows the same but for optimization objective of max rear 
+gain.      Fig. 5. (a) I -V characteristics for different configurations  
+Fig. 5 . (b) P -V characteristics for different configurations  
+The sweep parameters were varied all toget her in the first 
+analyses. There is also a provision as shown in Fig . 6 in the 
+frontend w herein you can f ix two pa rameters an d vary the  third 
+to get a nother set of optim al config urations. This ma kes the 
+platform dyna mic an d according to the practical need s of the 
+PV syste m designers.  Fig. 7 shows the variation of rear share of 
+effective irradiance on v arying albedo ( surface type ) with fixed 
+parameters , tilt angle of 20°, height of 100 cm, azimuthal angle 
+of 180 ° and bifaciality o f 0.7. Consequently, we achieve d a rear 
+gain share of 24.72% for aluminium surface. Fig . 8 shows the 
+variation of rear share of effe ctive irradiance on varying panel 
+height with t ilt angle fixed at 20°, albedo of 0.18 and rest all 
+factors remain same as in case of Fig 7. With thi s variation, we 
+achieve 6.61% for a panel height of 100 cm. Fig . 9. shows the 
+variation of rear share of effe ctive irradiance on varying tilt 
+angle  with heigh t fixed at  100 cm, albedo of 0.18 and rest all 
+factors remain same as in case of Fig. 7. As a result, we obtain 
+a maximum  rear gain share  of 7.24% for tilt angle of 10 °.  
+ 
+Fig. 6. Running Analyses by fixin g any two pa rameters  out of the three  and 
+varying on e 
+
+
+TABLE I.  MAX ENERGY BASED OPTIMAL CONFIGURATION  
+  
+TABLE II. MAX REAR GAIN BASED OPTIMAL CONFIGURATION  
+ 
+ 
+Fig. 7.  Rear share of effective irradiance on varying albedo  
+Fig. 8.  Rear share of effective irradiance on varying height   
+ 
+ 
+ 
+ 
+ 
+Fig. 9. Rear share of effective irradiance on varying tilt angle  
+IV. CONCLUSION  
+      This paper analyses the optimal configuration of bifacial 
+photovoltaic (PV) systems through a computational framework 
+that integrates location -specific irradiance data with parametric 
+performance evaluation. The developed platform utilizes 
+irradiance data retrieved from the NASA POWER database and 
+processes it through a MATLAB -based simulation engine 
+implementing the irradiance and electrical models of bifacial 
+PV modules. The results indicate that the rear -side irradiance 
+contribution is significantly infl uenced by the combined effects 
+of surface reflectivity, module tilt angle, and mounting height. 
+Higher ground albedo leads to increased rear irradiance due to 
+greater reflection of incident solar radiation toward the rear 
+surface of the module. In contrast , variations in mounting 
+height with other parameters fixed result in relatively smaller 
+changes in rear gain, as the geometric view factor between the 
+ground and the module does not increase substantially beyond 
+certain elevations. Similarly, changes in t ilt angle modify the 
+Rank  Height ( cm) Tilt angle ( °) Surface type  Energy ( kWh ) Peak power ( kW) Rear gain (%) 
+1 450 30 Concrete  3.16843  0.43249  16.5518  
+2 450 40 Concrete  3.16570  0.43154  15.6057  
+3 400 30 Concrete  3.16521  0.43201  16.3917  
+4 400 40 Concrete  3.16258  0.43108 15.450 6 
+5 350 30 Concrete  3.16113  0.43140  16.1891  
+Rank  Height ( cm) Tilt angle ( °) Surface type  Energy ( kWh ) Peak power ( kW) Rear gain (%) 
+1 450 10 Concrete  2.99422  0.41002  17.8989  
+2 400 10 Concrete  2.99130  0.40957  17.7561  
+3 350 10 Concrete  2.98755  0.40899  17.5731  
+4 300 10 Concrete  2.98258 0.40823  17.3301  
+5 450 20 Concrete  3.11109  0.42532  17.3252  
+
+balance between sky view and ground view factors, thereby 
+affecting the proportion of reflected irradiance reaching the rear 
+side. These findings demonstrate that bifacial PV performance 
+is strongly dependent on installation geometry and surrounding 
+surfac e characteristics, and the proposed framework provides a 
+systematic and flexible approach for identifying optimal system 
+configurations according to different design objectives.  
+V. REFERENCES  
+ 
+[1]  R. Guerrero -Lemus, F. Vega, E. Kim, A. Kimm and M. 
+Shephard, "Bifacial solar photovoltaics – A technology review," 
+Renewable and Sustainable Energy Reviews, vol. 60, pp. 1533 -
+1549, 2016.  
+[2]  M. Alam, M. R. Khan and C. Deline, "Performance comparison 
+between bifacial and monofacial photovoltaic systems under 
+varying environmental conditions," Sustainable Energy 
+Technologies and Assessments, vol. 57, p. 103210, 2023.  
+[3]  C. Deline, A. A. Pelaez, S. MacAlpine and B. Marion, "Bifacial 
+photovoltaic system performance: Separating fact from fiction," 
+National Renewable Energy Laboratory (NREL), Golden, CO, 
+USA, 2019.  
+[4]  X. Sun, M. R. Khan, C. Deline and M. A. Alam, "Optimization 
+and performance of bifacial solar modules: A global 
+perspective," Applied Energy, vol. 212, pp. 1601 -1610, 2018.  
+[5]  A. Basak, S. Das and R. Banerjee, "Tilt angle optimization for 
+bifacial photovoltaic modules for enhanced energy generation," 
+Applied Energy, vol. 345, p. 121245, 2025.  
+[6]  U. Peter and M. Novak, "Optimal tilt angle for maximizing 
+energy production of bifacial solar panels," Journal of 
+Sustainable Energy Systems, vol. 14, no. 1, pp. 45 -56, 2025.  
+[7]  N. Riedel -Lyngskær, J. M. L. P. Larsen and B. G. Nielsen, 
+"Effect of spectral albedo on energy yield of bifacial 
+photovoltaic systems," Solar Energy, vol. 231, pp. 176 -186, 
+2022.  
+[8]  M. H. Aksoy and H. A. Ceylan, "Investigation of ground albedo 
+effects on bifacial photovoltaic panel performance," Renewable 
+Energy Research Journal, vol. 13, no. 4, pp. 1800 -1808, 2023.  [9]  N. Baghel, A. Chandel and S. K. Sharma, "Performance 
+evaluation and optimization of albedo and tilt angle in bifacial 
+photovoltaic systems," Solar Energy, vol. 250, pp. 84 -95, 2023.  
+[10]  I. N. Atalay, M. Kaya and H. Ozturk, "Experimental 
+investigation of ground surface reflectivity impact on bifacial 
+photovoltaic systems," Solar Energy, vol. 246, pp. 65 -74, 2023.  
+[11]  F. Dincer and E. Ozer, "Optimization of rear -side energy 
+contribution in bifacial PV panels: A parametric analysis on 
+albedo, tilt, height, and mounting configuration," Energies, vol. 
+18, p. 4443, 2025.  
+[12]  D. S. Braga, R. Zilles and E. Lorenzo, "Performance analysis of 
+bifacial photovoltaic modules under tropical climatic 
+conditions," Renewable Energy and Environmental 
+Sustainability, vol. 8, pp. 1 -10, 2023.  
+[13]  A. F. Almarshoud, A. Al -Badi and M. Al -Sulaiman, 
+"Experimental performance analysis of bifacial photovoltaic 
+modules under different operating conditions," Energies, vol. 
+17, no. 21, p. 5456, 2024.  
+[14]  M. T. Patel, M. R. Khan and M. A. Alam, "Optimum design of 
+tracking bifacial solar farms," IEEE Journal of Photovoltaics, 
+vol. 11, no. 1, pp. 237 -245, 2021.  
+[15]  B. Y. H. Liu and R. C. Jordan, "The interrelationship and 
+characteristic distribution of direct, diffuse and total solar 
+radiation," Solar Energy, vol. 4, pp. 1 -19, 1960.  
+[16]  J. A. D. Beckman and W. A., Solar Engineering of Thermal 
+Processes, Hoboken, NJ, USA: Wiley, 2013.  
+[17]  B. Marion, C. Deline, A. A. Pelaez, S. MacAlpine and B. Stein, 
+"A practical irradiance model for bifacial PV modules," IEEE 
+Journal of Photovoltaics, vol. 7, no. 1, pp. 1 -7, 2017.  
+[18]  U. A. Yusufoglu, T. M. Pletzer, H. H. Kurz and H. J. Hübner, 
+"Analysis of the performance of bifacial modules in vertical and 
+tilted installations," Progress in Photovoltaics: Research and 
+Applications, vol. 23, no. 12, pp. 1820 -1835, 2015.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

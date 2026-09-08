@@ -1,0 +1,185 @@
+﻿Slide width: 12192000, height: 6858000
+Slide width inches: 13.33, height inches: 7.50
+Total slides: 20
+Slide layouts available: 11
+  Layout 0: TITLE
+  Layout 1: OBJECT
+  Layout 2: BLANK
+  Layout 3: SECTION_HEADER
+  Layout 4: TWO_OBJECTS
+  Layout 5: TWO_OBJECTS_WITH_TEXT
+  Layout 6: TITLE_ONLY
+  Layout 7: OBJECT_WITH_CAPTION_TEXT
+  Layout 8: PICTURE_WITH_CAPTION_TEXT
+  Layout 9: VERTICAL_TEXT
+  Layout 10: VERTICAL_TITLE_AND_VERTICAL_TEXT
+
+================================================================================
+
+--- Slide 1 ---
+  Layout: BLANK
+  Background fill type: BACKGROUND (5)
+  Shape: PICTURE (13), name='Google Shape;89;g3c0cb13ea2a_1_9', pos=(0,0), size=(12192000,6858000)
+    [IMAGE: image/png]
+
+--- Slide 2 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;94;p2', pos=(838200,365125), size=(10515600,1325563)
+    Text: 'Introduction'
+    P0R0: size=None, bold=None, italic=None, color=, name=Times New Roman, text='Introduction'
+  Shape: PLACEHOLDER (14), name='Google Shape;95;p2', pos=(335950,5163575), size=(11643000,1557900)
+    Text: 'India's Clean Energy Imperative 500 GW non-fossil capacity + 50% renewable electricity by 2030 ù solar is the fastest pa'
+    P0R0: size=203200, bold=True, italic=None, color=, name=Times New Roman, text='India's Clean Energy Imperative'
+    P0R1: size=203200, bold=None, italic=None, color=, name=Times New Roman, text=' 500 GW non-fossil capacity + 50% renewable electricity by 2'
+    P1R0: size=203200, bold=True, italic=None, color=, name=Times New Roman, text='Bifacial Modules: Double the Surface, Higher the Yield'
+    P1R1: size=203200, bold=None, italic=None, color=, name=Times New Roman, text=' Unlike conventional panels, bifacial modules harvest energy'
+    P2R0: size=203200, bold=True, italic=None, color=, name=Times New Roman, text='Configuration is Everything'
+    P2R1: size=203200, bold=None, italic=None, color=, name=Times New Roman, text=' Tilt, spacing, and albedo directly determine rear-side gain'
+  Shape: PLACEHOLDER (14), name='Google Shape;96;p2', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: PICTURE (13), name='Google Shape;97;p2', pos=(11355439,34719), size=(805938,805938)
+    [IMAGE: image/png]
+  Shape: AUTO_SHAPE (1), name='Google Shape;98;p2', pos=(8337551,4137468), size=(1320800,465667)
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PICTURE (13), name='Google Shape;99;p2', pos=(6796650,1253650), size=(5182350,3681149)
+    [IMAGE: image/jpeg]
+  Shape: LINE (9), name='Google Shape;100;p2', pos=(6399425,1253650), size=(54900,3784500)
+  Shape: PICTURE (13), name='Google Shape;101;p2', pos=(232300,1253650), size=(5956649,3681150)
+    [IMAGE: image/png]
+
+--- Slide 3 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;106;p3', pos=(838200,-227542), size=(10515600,1325563)
+    Text: 'Literature Survey'
+    P0R0: size=None, bold=None, italic=None, color=, name=Times New Roman, text='Literature Survey'
+  Shape: PLACEHOLDER (14), name='Google Shape;107;p3', pos=(649288,1489075), size=(10898187,5003800)
+    Text: '\n\n'
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P1R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P2R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PLACEHOLDER (14), name='Google Shape;108;p3', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: PICTURE (13), name='Google Shape;109;p3', pos=(11355439,34719), size=(805938,805938)
+    [IMAGE: image/png]
+  Shape: TABLE (19), name='Google Shape;110;p3', pos=(-10160,812800), size=(3000000,3000000)
+
+--- Slide 4 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;115;p4', pos=(10134600,361738), size=(1209040,187643)
+    Text: 'aa'
+    P0R0: size=101600, bold=True, italic=None, color=, name=Times New Roman, text='aa'
+  Shape: PLACEHOLDER (14), name='Google Shape;116;p4', pos=(649288,1489075), size=(10898187,5003800)
+    Text: '\n\n'
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P1R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P2R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PLACEHOLDER (14), name='Google Shape;117;p4', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: TABLE (19), name='Google Shape;118;p4', pos=(0,0), size=(3000000,3000000)
+
+--- Slide 5 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;123;p5', pos=(10134600,361738), size=(1209040,187643)
+    Text: 'aa'
+    P0R0: size=101600, bold=True, italic=None, color=, name=Times New Roman, text='aa'
+  Shape: PLACEHOLDER (14), name='Google Shape;124;p5', pos=(649288,1489075), size=(10898187,5003800)
+    Text: '\n\n'
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P1R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P2R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PLACEHOLDER (14), name='Google Shape;125;p5', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: TABLE (19), name='Google Shape;126;p5', pos=(0,0), size=(3000000,3000000)
+
+--- Slide 6 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;131;p6', pos=(10134600,361738), size=(1209040,187643)
+    Text: 'aa'
+    P0R0: size=101600, bold=True, italic=None, color=, name=Times New Roman, text='aa'
+  Shape: PLACEHOLDER (14), name='Google Shape;132;p6', pos=(649288,1489075), size=(10898187,5003800)
+    Text: '\n\n'
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P1R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P2R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PLACEHOLDER (14), name='Google Shape;133;p6', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: TABLE (19), name='Google Shape;134;p6', pos=(0,0), size=(3000000,3000000)
+
+--- Slide 7 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;139;p7', pos=(0,34725), size=(11201400,805800)
+    Text: 'Gaps Identified'
+    P0R0: size=None, bold=None, italic=None, color=, name=Times New Roman, text='Gaps Identified'
+  Shape: PLACEHOLDER (14), name='Google Shape;140;p7', pos=(649288,1489075), size=(10898187,4610687)
+    Text: '\nMonofacial Mindset, Bifacial Hardware Over 60% of utility-scale bifacial installations still use monofacial design rule'
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+    P1R0: size=241300, bold=True, italic=None, color=, name=Times New Roman, text='Monofacial Mindset, Bifacial Hardware'
+    P1R1: size=241300, bold=None, italic=None, color=, name=Times New Roman, text=' Over 60% of utility-scale bifacial installations still use '
+    P1R2: size=241300, bold=True, italic=None, color=, name=Times New Roman, text='10û20% potential yield untapped.'
+    P2R0: size=241300, bold=True, italic=None, color=, name=Times New Roman, text='Tilt & Height: The Unoptimized Variables'
+    P2R1: size=241300, bold=None, italic=None, color=, name=Times New Roman, text=' A mere '
+    P2R2: size=241300, bold=True, italic=None, color=, name=Times New Roman, text='5░ change in tilt or 0.5m change in height'
+    P2R3: size=241300, bold=None, italic=None, color=, name=Times New Roman, text=' can shift bifacial gain by 3û8% , yet most Indian plant des'
+    P3R0: size=241300, bold=True, italic=None, color=, name=Times New Roman, text=' No Ground Truth Data for India'
+    P3R1: size=241300, bold=None, italic=None, color=, name=Times New Roman, text=' Existing bifacial performance models are validated on Europ'
+    P3R2: size=241300, bold=True, italic=None, color=, name=Times New Roman, text='prediction error can exceed 15%'
+    P3R3: size=241300, bold=None, italic=None, color=, name=Times New Roman, text=', making optimal configuration decisions unreliable.'
+  Shape: PLACEHOLDER (14), name='Google Shape;141;p7', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: PICTURE (13), name='Google Shape;142;p7', pos=(11355439,34719), size=(805938,805938)
+    [IMAGE: image/png]
+  Shape: PICTURE (13), name='Google Shape;143;p7', pos=(0,1), size=(12192000,7167950)
+    [IMAGE: image/jpeg]
+
+--- Slide 8 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;148;p8', pos=(746760,263525), size=(10515600,1325563)
+    Text: 'Problem Statement'
+    P0R0: size=None, bold=None, italic=None, color=, name=Times New Roman, text='Problem Statement'
+  Shape: PLACEHOLDER (14), name='Google Shape;149;p8', pos=(649300,1686738), size=(10888200,4572000)
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: PLACEHOLDER (14), name='Google Shape;150;p8', pos=(8610600,6356350), size=(2743200,365125)
+    Text: 'ï#¢'
+  Shape: PICTURE (13), name='Google Shape;151;p8', pos=(11355439,34719), size=(805938,805938)
+    [IMAGE: image/png]
+  Shape: AUTO_SHAPE (1), name='Google Shape;152;p8', pos=(6972300,2387600), size=(1295400,965200)
+    P0R0: size=None, bold=None, italic=None, color=, name=None, text=''
+  Shape: AUTO_SHAPE (1), name='Google Shape;153;p8', pos=(931005,1935638), size=(10331355,4046561)
+    Text: 'How can the rear side energy contribution and overall performance of Bifacial PV systems be maximized by optimally selec'
+    P0R0: size=355600, bold=True, italic=False, color=, name=Times New Roman, text='How can '
+    P0R1: size=355600, bold=True, italic=None, color=, name=Times New Roman, text='the rear side energy contribution and overall performance of'
+    P1R0: size=None, bold=None, italic=None, color=, name=None, text=''
+
+--- Slide 9 ---
+  Layout: OBJECT
+  Background fill type: BACKGROUND (5)
+  Shape: PLACEHOLDER (14), name='Google Shape;158;g3c0c4028e41_0_21', pos=(698059,81903), size=(10515600,1325700)
+    Text: 'Rear Power from Bifacial PV'
+    P0R0: size=None, bold=None, italic=None, color=, name=Times New Roman, text='Rear Power from Bifacial PV'
+python : Traceback (most recent call last):
+At line:1 char:1
++ python analyze_ppt.py 2>&1 | Out-File -Encoding utf8 ppt_analysis.txt
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\amsh9\OneDrive\Desktop\PV-Bifacial-Sim\analyze_ppt.py", line 30, in <module>
+    print(f"    Text: '{txt}'")
+  File "C:\Python312\Lib\encodings\cp1252.py", line 19, in encode
+  Shape: PICTURE (13), name='Google Shape;159;g3c0c4028e41_0_21', pos=(11355439,34719), size=(805938,805938)
+    [IMAGE: image/png]
+  Shape: PLACEHOLDER (14), name='Google Shape;160;g3c0c4028e41_0_21', pos=(8610600,6356350), size=(2743200,365100)
+    Text: 'ï#¢'
+  Shape: PICTURE (13), name='Google Shape;161;g3c0c4028e41_0_21', pos=(344700,1407600), size=(5726725,4605449)
+    [IMAGE: image/png]
+  Shape: PLACEHOLDER (14), name='Google Shape;162;g3c0c4028e41_0_21', pos=(6431350,1444275), size=(5232300,3374400)
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u03c1' in position 75: character maps to <undefined>
